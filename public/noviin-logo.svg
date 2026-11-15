@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Noviin">
+  <rect width="512" height="512" rx="112" fill="#0B0B09" />
+  <g fill="#F7F6F1" transform="translate(64 64) scale(4)">
+    <rect x="28" y="4.6" width="40" height="7" rx="3.5" />
+    <rect x="14" y="16" width="33" height="7" rx="3.5" />
+    <rect x="50" y="16" width="29" height="7" rx="3.5" />
+    <rect x="7" y="27.4" width="42" height="7" rx="3.5" />
+    <rect x="52" y="27.4" width="37" height="7" rx="3.5" />
+    <rect x="4" y="38.8" width="60" height="7" rx="3.5" />
+    <rect x="68" y="38.8" width="24" height="7" rx="3.5" />
+    <rect x="4" y="50.2" width="72" height="7" rx="3.5" />
+    <rect x="79" y="50.2" width="13" height="7" rx="3.5" />
+    <rect x="7" y="61.6" width="36" height="7" rx="3.5" />
+    <rect x="46" y="61.6" width="43" height="7" rx="3.5" />
+    <rect x="14" y="73" width="40" height="7" rx="3.5" />
+    <rect x="57" y="73" width="25" height="7" rx="3.5" />
+    <rect x="28" y="84.4" width="40" height="7" rx="3.5" />
+  </g>
+</svg>

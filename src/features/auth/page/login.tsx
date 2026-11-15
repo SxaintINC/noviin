@@ -6,7 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 import {
   AuthShell,
-  NexusMark,
+  NoviinMark,
   TextField,
   PrimaryButton,
   PageLoader,
@@ -203,7 +203,7 @@ export default function Login() {
       <div style={{ maxWidth: 460, margin: "0 auto", paddingTop: "9vh" }}>
         {/* Centered brand + headline, Notion-style */}
         <div className="nx-fade-up" style={{ display: "flex", justifyContent: "center", marginBottom: 26 }}>
-          <NexusMark size={46} />
+          <NoviinMark size={46} />
         </div>
         <h1
           className="nx-fade-up"

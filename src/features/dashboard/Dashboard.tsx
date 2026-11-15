@@ -1,4 +1,4 @@
-// ── NEXUS HOME ────────────────────────────────────────────────────────────────
+// ── NOVIIN HOME ────────────────────────────────────────────────────────────────
 // Post-auth analytics dashboard, modeled on the logged-in admin console from
 // the reference: top bar with the session/term pill, a Billing Plan chip, a
 // "Hi … / Logged In As" block with LOG OUT, a sectioned sidebar that now
@@ -48,7 +48,7 @@ import {
   X,
 } from "@phosphor-icons/react";
 
-import { C, APP_NAME, Checkbox, NexusMark, PrimaryButton, SERIF, StatusPill, Spinner } from "../../shared/ui/kit";
+import { C, APP_NAME, Checkbox, NoviinMark, PrimaryButton, SERIF, StatusPill, Spinner } from "../../shared/ui/kit";
 import { clearCurrentUser, currentUser, ensureSession, firstName, greeting } from "../../shared/lib/session";
 import {
   defaultOnboarding,
@@ -528,7 +528,7 @@ export default function Home() {
         }}
       >
         <div className="nx-pop">
-          <NexusMark size={44} />
+          <NoviinMark size={44} />
         </div>
         <Spinner size={22} color={C.green} />
       </div>
@@ -589,7 +589,7 @@ export default function Home() {
               flexShrink: 0,
             }}
           >
-            <NexusMark size={23} color={C.paper} />
+            <NoviinMark size={23} color={C.paper} />
           </span>
           <span style={{ minWidth: 0, flex: 1 }}>
             <span
@@ -772,7 +772,7 @@ export default function Home() {
       >
         <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "1.1px", textTransform: "uppercase", color: C.faint }}>Powered by</span>
         <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
-          <NexusMark size={14} color={C.ink} />
+          <NoviinMark size={14} color={C.ink} />
           <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: "-0.2px", color: C.ink }}>{APP_NAME}</span>
         </span>
       </div>

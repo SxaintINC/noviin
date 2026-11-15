@@ -50,31 +50,37 @@ export const C = {
 export const SERIF = "'Source Serif 4', 'Iowan Old Style', Georgia, serif";
 
 // The one true product name. Change it here and it changes everywhere.
-export const APP_NAME = "Nexus";
+export const APP_NAME = "Noviin";
 
 // ── LOGO ──────────────────────────────────────────────────────────────────────
-// Nexus mark: a circular emblem of three arcs joined by three "people" dots.
+// Noviin mark: a sphere built from offset horizontal slats. Drawn as plain
+// rects on a 96-unit grid so it stays crisp at favicon size.
 
-export function NexusMark({ size = 30, color = C.ink }: { size?: number; color?: string }) {
-  const R = 40;
-  const CIRC = 2 * Math.PI * R;
-  const gap = CIRC / 3 - 82; // three equal gaps between the arcs
+export function NoviinMark({ size = 30, color = C.ink }: { size?: number; color?: string }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" aria-hidden>
-      <circle
-        cx="50"
-        cy="50"
-        r={R}
-        stroke={color}
-        strokeWidth="13"
-        strokeLinecap="round"
-        strokeDasharray={`${82} ${gap}`}
-        transform="rotate(-58 50 50)"
-      />
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 96 96"
+      fill="none"
+      role="img"
+      aria-label="Noviin"
+    >
       <g fill={color}>
-        <circle cx="50" cy="25" r="10.5" />
-        <circle cx="28" cy="62.5" r="10.5" />
-        <circle cx="72" cy="62.5" r="10.5" />
+        <rect x="28" y="4.6" width="40" height="7" rx="3.5" />
+        <rect x="14" y="16" width="33" height="7" rx="3.5" />
+        <rect x="50" y="16" width="29" height="7" rx="3.5" />
+        <rect x="7" y="27.4" width="42" height="7" rx="3.5" />
+        <rect x="52" y="27.4" width="37" height="7" rx="3.5" />
+        <rect x="4" y="38.8" width="60" height="7" rx="3.5" />
+        <rect x="68" y="38.8" width="24" height="7" rx="3.5" />
+        <rect x="4" y="50.2" width="72" height="7" rx="3.5" />
+        <rect x="79" y="50.2" width="13" height="7" rx="3.5" />
+        <rect x="7" y="61.6" width="36" height="7" rx="3.5" />
+        <rect x="46" y="61.6" width="43" height="7" rx="3.5" />
+        <rect x="14" y="73" width="40" height="7" rx="3.5" />
+        <rect x="57" y="73" width="25" height="7" rx="3.5" />
+        <rect x="28" y="84.4" width="40" height="7" rx="3.5" />
       </g>
     </svg>
   );
@@ -83,7 +89,7 @@ export function NexusMark({ size = 30, color = C.ink }: { size?: number; color?:
 export function Logo({ color = C.ink, size = 20 }: { color?: string; size?: number }) {
   return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: 9 }}>
-      <NexusMark size={size * 1.55} color={color} />
+      <NoviinMark size={size * 1.55} color={color} />
       <span
         style={{
           fontSize: size + 2,
@@ -776,7 +782,7 @@ export function PageLoader({ messages }: { messages: string[] }) {
       }}
     >
       <div style={{ animation: "nexuspulse 1.5s ease-in-out infinite" }}>
-        <NexusMark size={46} />
+        <NoviinMark size={46} />
       </div>
       <div
         style={{

@@ -17,7 +17,7 @@ import {
   AnimatedCheck,
   AuthShell,
   C,
-  NexusMark,
+  NoviinMark,
   PrimaryButton,
   SERIF,
   StatusPill,
@@ -184,7 +184,7 @@ export default function Onboarding() {
             Setup complete.
           </h1>
           <p style={{ fontSize: 20, fontWeight: 600, color: C.muted, margin: "4px 0 30px" }}>
-            Nexus is ready for the {data.session} session
+            Noviin is ready for the {data.session} session
           </p>
           <div
             style={{
@@ -587,7 +587,7 @@ function AdminShell({
         {/* Row 2 — school header + logged-in-as + log out */}
         <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "2px 0 6px", flexWrap: "wrap" }}>
           <a href="/home" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 10 }}>
-            <NexusMark size={30} />
+            <NoviinMark size={30} />
             <span style={{ fontFamily: SERIF, fontSize: 21, fontWeight: 600, letterSpacing: "-0.4px", color: C.ink }}>
               {user.name.replace(/^(Dr\.|Mr\.|Mrs\.|Ms\.)\s*/i, "")}
             </span>

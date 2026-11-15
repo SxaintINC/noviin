@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { NoviinMark } from "../../shared/ui/kit";
 import {
   BookOpen,
   CalendarCheck,
@@ -146,7 +147,7 @@ const MEGA_MENUS: Record<string, MegaMenu> = {
         },
       ],
     ],
-    media: { kind: "feature", image: MENU_IMG("examly-products"), tag: "FEATURED", title: "Question Bank 2.0 — now with AI-assisted authoring" },
+    media: { kind: "feature", image: MENU_IMG("noviin-products"), tag: "FEATURED", title: "Question Bank 2.0 — now with AI-assisted authoring" },
   },
   Solutions: {
     columns: [
@@ -174,7 +175,7 @@ const MEGA_MENUS: Record<string, MegaMenu> = {
         },
       ],
     ],
-    media: { kind: "feature", image: MENU_IMG("examly-solutions"), tag: "CASE STUDY", title: "How Babcock University runs 5,000-student finals on Examly" },
+    media: { kind: "feature", image: MENU_IMG("noviin-solutions"), tag: "CASE STUDY", title: "How Babcock University runs 5,000-student finals on Noviin" },
   },
   Research: {
     columns: [
@@ -183,7 +184,7 @@ const MEGA_MENUS: Record<string, MegaMenu> = {
           heading: "Research",
           links: [
             { label: "Research Papers" },
-            { label: "Examly Labs", primary: true },
+            { label: "Noviin Labs", primary: true },
             { label: "Assessment Standards" },
             { label: "Research Blog" },
             { label: "Open Datasets" },
@@ -192,13 +193,13 @@ const MEGA_MENUS: Record<string, MegaMenu> = {
         },
       ],
     ],
-    media: { kind: "feature", image: MENU_IMG("examly-research"), tag: "LATEST", title: "Toward fairer adaptive assessment — Examly Labs Q2 report" },
+    media: { kind: "feature", image: MENU_IMG("noviin-research"), tag: "LATEST", title: "Toward fairer adaptive assessment — Noviin Labs Q2 report" },
   },
   Resources: {
     columns: [
       [
         {
-          heading: "In Examly",
+          heading: "In Noviin",
           links: [
             { label: "About" },
             { label: "Security" },
@@ -221,8 +222,8 @@ const MEGA_MENUS: Record<string, MegaMenu> = {
     media: {
       kind: "cards",
       items: [
-        { image: MENU_IMG("examly-labs", 700, 900), title: "Introducing Examly Labs", tag: "RESEARCH" },
-        { image: MENU_IMG("examly-partner", 700, 900), title: "How Babcock deploys CBT that actually works", tag: "COMPANY" },
+        { image: MENU_IMG("noviin-labs", 700, 900), title: "Introducing Noviin Labs", tag: "RESEARCH" },
+        { image: MENU_IMG("noviin-partner", 700, 900), title: "How Babcock deploys CBT that actually works", tag: "COMPANY" },
       ],
     },
   },
@@ -253,16 +254,16 @@ const TESTIMONIALS: Testimonial[] = [
     fg: "#F2F2EF",
     featured: true,
     span: 5,
-    avatar: AVATAR("examly-okeke"),
+    avatar: AVATAR("noviin-okeke"),
   },
   {
-    quote: "Examly cut our marking time by 80%. We went from a 2-week turnaround on mocks to same-day results — across 1,400 students.",
+    quote: "Noviin cut our marking time by 80%. We went from a 2-week turnaround on mocks to same-day results — across 1,400 students.",
     name: "Mrs. Adebayo",
     role: "Exams Coordinator, Greensprings School",
     bg: "#EFEEEA",
     fg: "#0A0A0A",
     span: 7,
-    avatar: AVATAR("examly-adebayo"),
+    avatar: AVATAR("noviin-adebayo"),
   },
   {
     quote: "I went from D7 to B2 in Chemistry in one term. The instant feedback after every drill is what changed it.",
@@ -271,34 +272,34 @@ const TESTIMONIALS: Testimonial[] = [
     bg: "#3A6F84",
     fg: "#F2F2EF",
     span: 4,
-    avatar: AVATAR("examly-david"),
+    avatar: AVATAR("noviin-david"),
   },
   {
-    quote: "Setting up our first paperless mock took half a day. Three months later, every JS3 exam runs on Examly.",
+    quote: "Setting up our first paperless mock took half a day. Three months later, every JS3 exam runs on Noviin.",
     name: "Mr. Nwosu",
     role: "Vice Principal, Atlantic Hall Epe",
     bg: "#FBFAF6",
     fg: "#0A0A0A",
     span: 5,
-    avatar: AVATAR("examly-nwosu"),
+    avatar: AVATAR("noviin-nwosu"),
   },
   {
-    quote: "Our pass rate on JAMB went up 18 points after we ran daily Examly drills for one term.",
+    quote: "Our pass rate on JAMB went up 18 points after we ran daily Noviin drills for one term.",
     name: "Dr. Akinola",
     role: "Head of Sciences, Babcock University",
     bg: "#C5764C",
     fg: "#F2F2EF",
     span: 3,
-    avatar: AVATAR("examly-akinola"),
+    avatar: AVATAR("noviin-akinola"),
   },
   {
-    quote: "Examly's adaptive engine knew I was weak in calculus before I did. It built me a study plan in 30 seconds.",
+    quote: "Noviin's adaptive engine knew I was weak in calculus before I did. It built me a study plan in 30 seconds.",
     name: "Chinwe Adeyemi",
     role: "A-Level Student, Lekki British School",
     bg: "#EFEEEA",
     fg: "#0A0A0A",
     span: 4,
-    avatar: AVATAR("examly-chinwe"),
+    avatar: AVATAR("noviin-chinwe"),
   },
   {
     quote: "Proctoring just works. Zero incidents across eight mocks this year — that's a first for us.",
@@ -307,7 +308,7 @@ const TESTIMONIALS: Testimonial[] = [
     bg: "#9A99B6",
     fg: "#0A0A0A",
     span: 4,
-    avatar: AVATAR("examly-bassey"),
+    avatar: AVATAR("noviin-bassey"),
   },
   {
     quote: "For the price of one part-time invigilator we get infrastructure that used to need a full IT team. It just paid for itself.",
@@ -316,7 +317,7 @@ const TESTIMONIALS: Testimonial[] = [
     bg: "#0A0B0E",
     fg: "#F2F2EF",
     span: 4,
-    avatar: AVATAR("examly-akande"),
+    avatar: AVATAR("noviin-akande"),
   },
 ];
 
@@ -470,15 +471,7 @@ function Navbar() {
     >
       <div className="r-nav-cluster" style={{ display: "flex", alignItems: "center", gap: 48 }}>
         <a href="#" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-          <span
-            style={{
-              width: 0,
-              height: 0,
-              borderTop: `13px solid ${fg}`,
-              borderLeft: "13px solid transparent",
-              transition: tx,
-            }}
-          />
+          <NoviinMark size={27} color={fg} />
           <span
             style={{
               fontSize: 20,
@@ -488,7 +481,7 @@ function Navbar() {
               transition: tx,
             }}
           >
-            examly
+            noviin
           </span>
         </a>
         <div className="r-hide-mobile" style={{ display: "flex", gap: 32 }}>
@@ -698,16 +691,9 @@ function MobileMenu({
               onClick={handleClose}
               style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}
             >
-              <span
-                style={{
-                  width: 0,
-                  height: 0,
-                  borderTop: `13px solid ${fg}`,
-                  borderLeft: "13px solid transparent",
-                }}
-              />
+              <NoviinMark size={27} color={fg} />
               <span style={{ fontSize: 20, fontWeight: 600, color: fg, letterSpacing: "-0.5px" }}>
-                examly
+                noviin
               </span>
             </a>
             <button
@@ -1500,7 +1486,7 @@ function Choreography() {
               className="r-hero-eyebrow"
               style={{ fontSize: 11, letterSpacing: 2.4, fontWeight: 600, color: "rgba(255,255,255,0.7)" }}
             >
-              EXAMLY FOR SCHOOLS
+              NOVIIN FOR SCHOOLS
             </span>
           </div>
           <h1
@@ -1585,7 +1571,7 @@ function Choreography() {
               margin: "0 auto",
             }}
           >
-            Examly works across the assessment stack — from the question banks
+            Noviin works across the assessment stack — from the question banks
             that benchmark your students, to the proctoring systems that keep
             every session airtight. Humans stay in the loop.
           </p>
@@ -1596,7 +1582,7 @@ function Choreography() {
           <SectionLabel>Data</SectionLabel>
           <Heading>The data powering<br />the country's best schools.</Heading>
           <Body>
-            Schools at the frontier run on Examly results. We source insights
+            Schools at the frontier run on Noviin results. We source insights
             with precision (25% of admins hold advanced degrees in education)
             and deliver at the bar exam day demands.
           </Body>
@@ -1632,7 +1618,7 @@ function Choreography() {
                 margin: 0,
               }}
             >
-              {"90% of the country's leading schools deploy their CBT through Examly."
+              {"90% of the country's leading schools deploy their CBT through Noviin."
                 .split(" ")
                 .map((w, i) => (
                   <span
@@ -2831,7 +2817,7 @@ function CapContent({ k }: { k: CapKey }) {
   return (
     <div style={{ display: "flex", gap: 40, alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
       <AuthorMockup />
-      <PromptCard prompt="> examly build me a 30-question Biology paper at WAEC standard, mixed difficulty, with answer key." />
+      <PromptCard prompt="> noviin build me a 30-question Biology paper at WAEC standard, mixed difficulty, with answer key." />
     </div>
   );
 }
@@ -3342,7 +3328,7 @@ function Latest() {
               color: "#0A0A0A",
             }}
           >
-            What schools say about Examly.
+            What schools say about Noviin.
           </h2>
         </div>
 
@@ -3757,7 +3743,7 @@ function Footer() {
               lineHeight: 1.2,
             }}
           >
-            <span style={{ color: FG }}>Try Examly</span> on your next mock today.
+            <span style={{ color: FG }}>Try Noviin</span> on your next mock today.
           </p>
           <button
             onClick={scrollTop}
@@ -3828,16 +3814,9 @@ function Footer() {
       >
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
-            <span
-              style={{
-                width: 0,
-                height: 0,
-                borderTop: `13px solid ${FG}`,
-                borderLeft: "13px solid transparent",
-              }}
-            />
+            <NoviinMark size={27} color={FG} />
             <span style={{ fontSize: 20, fontWeight: 600, color: FG, letterSpacing: "-0.5px" }}>
-              examly
+              noviin
             </span>
           </div>
           <p
@@ -4514,7 +4493,7 @@ type CookiePrefs = {
   marketing: boolean;
 };
 
-const COOKIE_KEY = "examly.cookie.prefs.v1";
+const COOKIE_KEY = "noviin.cookie.prefs.v1";
 
 function CookieBanner() {
   const [visible, setVisible] = useState(false);
@@ -4654,7 +4633,7 @@ function CookieBanner() {
                 margin: 0,
               }}
             >
-              We use cookies to keep Examly running, improve it, and remember
+              We use cookies to keep Noviin running, improve it, and remember
               your preferences. You're in control of what gets stored.
             </p>
           </div>
@@ -4800,7 +4779,7 @@ function CookieBanner() {
                   Cookie preferences
                 </h3>
                 <p style={{ fontSize: 14, color: "rgba(0,0,0,0.55)", lineHeight: 1.55, margin: 0 }}>
-                  Decide what Examly is allowed to remember about you. You can
+                  Decide what Noviin is allowed to remember about you. You can
                   change this anytime from the footer.
                 </p>
               </div>
@@ -4837,7 +4816,7 @@ function CookieBanner() {
               />
               <PrefRow
                 title="Marketing"
-                desc="Lets us show relevant content to schools that might find Examly useful."
+                desc="Lets us show relevant content to schools that might find Noviin useful."
                 on={prefs.marketing}
                 onChange={(v) => setPrefs({ ...prefs, marketing: v })}
               />
