@@ -5,8 +5,10 @@
 
 import { createClient, type AuthError, type Provider, type SupabaseClient } from "@supabase/supabase-js";
 
-const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const anon = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+// Blank values in .env.local must read as "unconfigured", not as an empty
+// string — supabase-js throws if it receives an empty key.
+const url = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.trim() || undefined;
+const anon = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined)?.trim() || undefined;
 
 export const supabaseReady = Boolean(url && anon);
 

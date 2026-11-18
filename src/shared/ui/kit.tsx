@@ -53,34 +53,42 @@ export const SERIF = "'Source Serif 4', 'Iowan Old Style', Georgia, serif";
 export const APP_NAME = "Noviin";
 
 // ── LOGO ──────────────────────────────────────────────────────────────────────
-// Noviin mark: a sphere built from offset horizontal slats. Drawn as plain
-// rects on a 96-unit grid so it stays crisp at favicon size.
+// Noviin mark: the slatted sphere, clipped to its disc. The clip id is unique
+// per instance so several marks can share a page without colliding.
 
 export function NoviinMark({ size = 30, color = C.ink }: { size?: number; color?: string }) {
+  const clip = `noviin-disc-${React.useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   return (
     <svg
       width={size}
       height={size}
-      viewBox="0 0 96 96"
-      fill="none"
+      viewBox="205 216 528 528"
       role="img"
       aria-label="Noviin"
+      style={{ color }}
     >
-      <g fill={color}>
-        <rect x="28" y="4.6" width="40" height="7" rx="3.5" />
-        <rect x="14" y="16" width="33" height="7" rx="3.5" />
-        <rect x="50" y="16" width="29" height="7" rx="3.5" />
-        <rect x="7" y="27.4" width="42" height="7" rx="3.5" />
-        <rect x="52" y="27.4" width="37" height="7" rx="3.5" />
-        <rect x="4" y="38.8" width="60" height="7" rx="3.5" />
-        <rect x="68" y="38.8" width="24" height="7" rx="3.5" />
-        <rect x="4" y="50.2" width="72" height="7" rx="3.5" />
-        <rect x="79" y="50.2" width="13" height="7" rx="3.5" />
-        <rect x="7" y="61.6" width="36" height="7" rx="3.5" />
-        <rect x="46" y="61.6" width="43" height="7" rx="3.5" />
-        <rect x="14" y="73" width="40" height="7" rx="3.5" />
-        <rect x="57" y="73" width="25" height="7" rx="3.5" />
-        <rect x="28" y="84.4" width="40" height="7" rx="3.5" />
+      <defs>
+        <clipPath id={clip}>
+          <circle cx="469" cy="480" r="259" />
+        </clipPath>
+      </defs>
+      <g
+        clipPath={`url(#${clip})`}
+        fill="currentColor"
+        stroke="currentColor"
+        strokeWidth="6"
+        strokeLinejoin="round"
+      >
+        <rect x="340" y="190" width="245" height="70" rx="14" />
+        <rect x="200" y="295" width="275" height="26" rx="12" />
+        <rect x="553" y="295" width="150" height="22" rx="11" />
+        <path d="M200 351H388Q394 351 394 357V367Q394 373 400 373H585Q591 373 591 367V357Q591 351 597 351H740V391H200Z" />
+        <path d="M200 424H343Q349 424 349 430V437Q349 443 355 443H655Q661 443 661 437V430Q661 424 667 424H740V460H200Z" />
+        <path d="M200 508H360Q368 508 372 514L378 520H678Q684 520 684 514V502Q684 496 690 496H740V532H200Z" />
+        <path d="M200 566H288Q294 566 294 572V576Q294 582 300 582H404Q410 582 410 588V593Q410 599 416 599H590Q596 599 596 593V572Q596 566 602 566H740V607H200Z" />
+        <rect x="561" y="630" width="150" height="22" rx="11" />
+        <path d="M200 648H368Q374 648 374 654V662Q374 668 380 668H508A6 6 0 0 1 508 680H200Z" />
+        <rect x="355" y="713" width="235" height="80" rx="14" />
       </g>
     </svg>
   );
