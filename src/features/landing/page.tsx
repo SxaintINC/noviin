@@ -1,21 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { NoviinMark } from "../../shared/ui/kit";
+import { NoviinIntro } from "../../shared/ui/NoviinIntro";
 import {
-  BookOpen,
+  CalendarBlank,
   CalendarCheck,
   CaretDown,
   CaretLeft,
   CaretRight,
   ChartBar,
-  ClockCounterClockwise,
-  Code,
+  GraduationCap,
+  IdentificationCard,
   List,
-  MoonStars,
-  PencilSimple,
   Play,
   Pause,
   SkipBack,
   SkipForward,
+  Wallet,
   X,
   XLogo,
   LinkedinLogo,
@@ -59,24 +60,31 @@ function EdgeFilterDefs() {
           <feColorMatrix type="saturate" values="0" />
           {/* boost contrast so edges pop */}
           <feComponentTransfer>
-            <feFuncR type="gamma" amplitude="1" exponent="0.55" offset="0" />
-            <feFuncG type="gamma" amplitude="1" exponent="0.55" offset="0" />
-            <feFuncB type="gamma" amplitude="1" exponent="0.55" offset="0" />
+            <feFuncR type="gamma" amplitude="1" exponent="0.5" offset="0" />
+            <feFuncG type="gamma" amplitude="1" exponent="0.5" offset="0" />
+            <feFuncB type="gamma" amplitude="1" exponent="0.5" offset="0" />
           </feComponentTransfer>
           {/* Laplacian — fires on high-contrast neighbourhoods */}
           <feConvolveMatrix
             order="3"
             kernelMatrix="-1 -1 -1 -1 8 -1 -1 -1 -1"
             preserveAlpha="false"
+            result="edges"
           />
-          {/* Force RGB to white, set alpha = amplified edge intensity */}
+          {/* Thicken the edges with a mild blur */}
+          <feGaussianBlur in="edges" stdDeviation="1.5" result="thick" />
+          {/* Restore sharp contrast after blur */}
+          <feComponentTransfer in="thick">
+            <feFuncA type="gamma" amplitude="1" exponent="0.55" offset="0" />
+          </feComponentTransfer>
+          {/* Force RGB to white, alpha = amplified edge intensity */}
           <feColorMatrix
             type="matrix"
             values="
               0 0 0 0 1
               0 0 0 0 1
               0 0 0 0 1
-              2.4 2.4 2.4 0 0"
+              3.5 3.5 3.5 0 0"
           />
         </filter>
       </defs>
@@ -93,6 +101,25 @@ const GREEN_BRIGHT = "#2E6F5A";
 const GREEN_TEXT = "#88A99A";
 const LIGHT_BG = "#EFEFEC";
 const HERO_BG = "#FFFFFF";
+
+// Z positions of the glass planes: positive = in front of the video, negative = behind
+const FRONT_Z = [240, 160, 80];
+const BACK_Z = [-110, -230, -360];
+const PANEL_Z = [...FRONT_Z, ...BACK_Z];
+const Z_FRONT = Math.max(...PANEL_Z);
+const Z_BACK = Math.min(...PANEL_Z);
+
+// Y positions (%) of the dashed traces that pierce every layer
+const TRACE_Y = [14, 28, 42, 56, 70, 84];
+
+// [x%, y%, text, z]
+const BITS: [number, number, string, number][] = [
+  [98, 10, "0111", -360],
+  [99, 30, "001", -360],
+  [98, 52, "0011", -360],
+  [99, 72, "11", -360],
+  [97, 90, "001", -360],
+];
 
 // ── DATA ──────────────────────────────────────────────────────────────────────
 
@@ -118,22 +145,12 @@ const MEGA_MENUS: Record<string, MegaMenu> = {
         {
           heading: "Build",
           links: [
-            { label: "Question Bank", primary: true },
-            { label: "Live Exams" },
-            { label: "Proctoring Suite" },
-            { label: "Mobile Companion" },
-            { label: "Offline Mode" },
-            { label: "Templates" },
-          ],
-        },
-      ],
-      [
-        {
-          heading: "Manage",
-          links: [
-            { label: "Admin Console" },
-            { label: "Analytics" },
-            { label: "Reporting" },
+            { label: "Student Records", primary: true },
+            { label: "Admissions" },
+            { label: "Attendance" },
+            { label: "Timetables" },
+            { label: "Fees & Billing" },
+            { label: "Guardian Portal" },
           ],
         },
         {
@@ -145,8 +162,26 @@ const MEGA_MENUS: Record<string, MegaMenu> = {
           ],
         },
       ],
+      [
+        {
+          heading: "Teach & assess",
+          links: [
+            { label: "Question Bank" },
+            { label: "Live Exams" },
+            { label: "Results & Report Cards" },
+          ],
+        },
+        {
+          heading: "Manage",
+          links: [
+            { label: "Admin Console" },
+            { label: "Analytics" },
+            { label: "Reporting" },
+          ],
+        },
+      ],
     ],
-    media: { kind: "feature", image: MENU_IMG("examly-products"), tag: "FEATURED", title: "Question Bank 2.0 — now with AI-assisted authoring" },
+    media: { kind: "feature", image: MENU_IMG("noviin-products"), tag: "FEATURED", title: "Student records — one profile from admission to graduation" },
   },
   Solutions: {
     columns: [
@@ -163,18 +198,18 @@ const MEGA_MENUS: Record<string, MegaMenu> = {
       ],
       [
         {
-          heading: "By exam type",
+          heading: "By need",
           links: [
-            { label: "Mock Exams" },
-            { label: "Final Exams" },
-            { label: "Practice & CA" },
-            { label: "Entrance Tests" },
-            { label: "Government Exams" },
+            { label: "Admissions" },
+            { label: "Attendance" },
+            { label: "Fees & Billing" },
+            { label: "Results" },
+            { label: "Guardian Communication" },
           ],
         },
       ],
     ],
-    media: { kind: "feature", image: MENU_IMG("examly-solutions"), tag: "CASE STUDY", title: "How Babcock University runs 5,000-student finals on Examly" },
+    media: { kind: "feature", image: MENU_IMG("noviin-solutions"), tag: "CASE STUDY", title: "How Babcock University keeps 5,000 students on one system" },
   },
   Research: {
     columns: [
@@ -183,8 +218,8 @@ const MEGA_MENUS: Record<string, MegaMenu> = {
           heading: "Research",
           links: [
             { label: "Research Papers" },
-            { label: "Examly Labs", primary: true },
-            { label: "Assessment Standards" },
+            { label: "Noviin Labs", primary: true },
+            { label: "School Data Standards" },
             { label: "Research Blog" },
             { label: "Open Datasets" },
             { label: "Research Careers" },
@@ -192,13 +227,13 @@ const MEGA_MENUS: Record<string, MegaMenu> = {
         },
       ],
     ],
-    media: { kind: "feature", image: MENU_IMG("examly-research"), tag: "LATEST", title: "Toward fairer adaptive assessment — Examly Labs Q2 report" },
+    media: { kind: "feature", image: MENU_IMG("noviin-research"), tag: "LATEST", title: "How schools actually use their data — Noviin Labs Q2 report" },
   },
   Resources: {
     columns: [
       [
         {
-          heading: "In Examly",
+          heading: "In Noviin",
           links: [
             { label: "About" },
             { label: "Security" },
@@ -221,8 +256,8 @@ const MEGA_MENUS: Record<string, MegaMenu> = {
     media: {
       kind: "cards",
       items: [
-        { image: MENU_IMG("examly-labs", 700, 900), title: "Introducing Examly Labs", tag: "RESEARCH" },
-        { image: MENU_IMG("examly-partner", 700, 900), title: "How Babcock deploys CBT that actually works", tag: "COMPANY" },
+        { image: MENU_IMG("noviin-labs", 700, 900), title: "Introducing Noviin Labs", tag: "RESEARCH" },
+        { image: MENU_IMG("noviin-partner", 700, 900), title: "How Babcock runs 5,000 students on one system", tag: "COMPANY" },
       ],
     },
   },
@@ -246,77 +281,77 @@ const AVATAR = (seed: string) => `https://i.pravatar.cc/200?u=${seed}`;
 
 const TESTIMONIALS: Testimonial[] = [
   {
-    quote: "It's the first system my teachers actually want to use. Authoring a paper is faster than typing it in Word.",
+    quote: "It's the first system my staff actually want to use. Enrolment, attendance and fees all live in one place now.",
     name: "Mrs. Okeke",
     role: "Principal, Day Waterman College",
     bg: "#1F4D3E",
     fg: "#F2F2EF",
     featured: true,
     span: 5,
-    avatar: AVATAR("examly-okeke"),
+    avatar: AVATAR("noviin-okeke"),
   },
   {
-    quote: "Examly cut our marking time by 80%. We went from a 2-week turnaround on mocks to same-day results — across 1,400 students.",
+    quote: "End-of-term reporting went from two weeks to one afternoon — across 1,400 students. Attendance and fees close with it.",
     name: "Mrs. Adebayo",
-    role: "Exams Coordinator, Greensprings School",
+    role: "School Administrator, Greensprings School",
     bg: "#EFEEEA",
     fg: "#0A0A0A",
     span: 7,
-    avatar: AVATAR("examly-adebayo"),
+    avatar: AVATAR("noviin-adebayo"),
   },
   {
-    quote: "I went from D7 to B2 in Chemistry in one term. The instant feedback after every drill is what changed it.",
+    quote: "My timetable, results and fee balance are all in one place. I stopped queueing at the bursary.",
     name: "David Okafor",
     role: "SS3 Student, Loyola Jesuit College",
     bg: "#3A6F84",
     fg: "#F2F2EF",
     span: 4,
-    avatar: AVATAR("examly-david"),
+    avatar: AVATAR("noviin-david"),
   },
   {
-    quote: "Setting up our first paperless mock took half a day. Three months later, every JS3 exam runs on Examly.",
+    quote: "Setting up our first term took half a day. Three months later, every department runs on Noviin.",
     name: "Mr. Nwosu",
     role: "Vice Principal, Atlantic Hall Epe",
     bg: "#FBFAF6",
     fg: "#0A0A0A",
     span: 5,
-    avatar: AVATAR("examly-nwosu"),
+    avatar: AVATAR("noviin-nwosu"),
   },
   {
-    quote: "Our pass rate on JAMB went up 18 points after we ran daily Examly drills for one term.",
+    quote: "Fee collection moved from 61% to 94% in two terms. The reminders do what the bursary used to chase by hand.",
     name: "Dr. Akinola",
     role: "Head of Sciences, Babcock University",
     bg: "#C5764C",
     fg: "#F2F2EF",
     span: 3,
-    avatar: AVATAR("examly-akinola"),
+    avatar: AVATAR("noviin-akinola"),
   },
   {
-    quote: "Examly's adaptive engine knew I was weak in calculus before I did. It built me a study plan in 30 seconds.",
+    quote: "My guardian gets an alert if I miss a morning, and I get my results the day they're published.",
     name: "Chinwe Adeyemi",
     role: "A-Level Student, Lekki British School",
     bg: "#EFEEEA",
     fg: "#0A0A0A",
     span: 4,
-    avatar: AVATAR("examly-chinwe"),
+    avatar: AVATAR("noviin-chinwe"),
   },
   {
-    quote: "Proctoring just works. Zero incidents across eight mocks this year — that's a first for us.",
+    quote: "Attendance is marked in seconds and the term report writes itself. That's a first for us.",
     name: "Mr. Bassey",
     role: "Director of Curriculum, Vivian Fowler Memorial",
     bg: "#9A99B6",
     fg: "#0A0A0A",
     span: 4,
-    avatar: AVATAR("examly-bassey"),
+    avatar: AVATAR("noviin-bassey"),
   },
   {
-    quote: "For the price of one part-time invigilator we get infrastructure that used to need a full IT team. It just paid for itself.",
+    quote: "For less than one full-time clerk we get infrastructure that used to need a full IT team. It just paid for itself.",
     name: "Mr. Akande",
     role: "Founder, Olashore International",
     bg: "#0A0B0E",
     fg: "#F2F2EF",
     span: 4,
-    avatar: AVATAR("examly-akande"),
+    avatar: AVATAR("noviin-akande"),
   },
 ];
 
@@ -354,10 +389,11 @@ function SectionLabel({ children, dark = false }: { children: React.ReactNode; d
 function Navbar() {
   const navigate = useNavigate();
   const wrap = useRef<HTMLDivElement>(null);
-  // `atTop` = scroll position at top of page; `openMenu` = mega-menu hovered
-  // open. Either condition forces the nav into light mode (white surface,
-  // dark text) because the dropdown panel is always light.
-  const [atTop, setAtTop] = useState(true);
+  // `navLight` = the backdrop currently behind the fixed nav is light, so the
+  // nav uses dark text and no surface of its own; `openMenu` = mega-menu
+  // hovered open. Either condition forces the nav into light mode (white
+  // surface, dark text) because the dropdown panel is always light.
+  const [navLight, setNavLight] = useState(true);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const openRef = useRef<string | null>(null);
@@ -396,7 +432,6 @@ function Navbar() {
       const y = window.scrollY;
       const dy = y - lastY;
       const top = y < TOP_THRESHOLD;
-      setAtTop(top);
       // Don't auto-hide while a menu is open
       if (openRef.current) {
         lastY = y;
@@ -409,12 +444,12 @@ function Navbar() {
         }
       } else if (dy > 4 && y > 80) {
         if (!hidden) {
-          gsap.to(wrap.current, { yPercent: -100, duration: 0.35, ease: "power2.in" });
+          gsap.to(wrap.current, { yPercent: -100, duration: 0.18, ease: "power3.in" });
           hidden = true;
         }
       } else if (dy < -4) {
         if (hidden) {
-          gsap.to(wrap.current, { yPercent: 0, duration: 0.35, ease: "power2.out" });
+          gsap.to(wrap.current, { yPercent: 0, duration: 0.28, ease: "power2.out" });
           hidden = false;
         }
       }
@@ -428,18 +463,39 @@ function Navbar() {
     };
   }, []);
 
-  // Open menu OR being at top of page → light surface
-  const light = atTop || !!openMenu;
+  // The hero timeline broadcasts its theme on every animation tick, so the
+  // nav flips on the exact same frame as the stage behind it — no waiting for
+  // the scroll or GSAP's scrub to settle.
+  useEffect(() => {
+    const onNavTheme = (e: Event) => {
+      setNavLight((e as CustomEvent<"light" | "dark">).detail === "light");
+    };
+    window.addEventListener("noviin:nav-theme", onNavTheme);
+    return () => window.removeEventListener("noviin:nav-theme", onNavTheme);
+  }, []);
+
+  // Open menu OR a light backdrop behind the nav → light surface
+  const light = navLight || !!openMenu;
 
   const fg = light ? "#0A0A0A" : OFF_WHITE;
   const fgMuted = light ? "rgba(0,0,0,0.7)" : "rgba(255,255,255,0.75)";
-  const navBg = light ? "rgba(248,248,247,0.94)" : "rgba(0,0,0,0.72)";
-  const navBorder = light ? "1px solid transparent" : "1px solid rgba(255,255,255,0.04)";
+  // On a light backdrop the nav has no surface of its own so it blends into
+  // the page; only the open mega-menu needs a solid light panel behind it.
+  const navBg = openMenu
+    ? "rgba(248,248,247,0.98)"
+    : navLight
+      ? "transparent"
+      : "rgba(0,0,0,0.72)";
+  const navBorder = openMenu
+    ? "1px solid rgba(0,0,0,0.06)"
+    : navLight
+      ? "1px solid transparent"
+      : "1px solid rgba(255,255,255,0.04)";
   const btnBorder = light ? "rgba(0,0,0,0.18)" : "rgba(255,255,255,0.18)";
   const btnHover = light ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.06)";
   const ctaBg = light ? "#0A0A0A" : OFF_WHITE;
   const ctaText = light ? OFF_WHITE : "#0A0A0A";
-  const tx = "color 0.35s ease, background 0.35s ease, border-color 0.35s ease, opacity 0.25s ease";
+  const tx = "color 0.35s ease, background 0.2s ease, border-color 0.2s ease, opacity 0.25s ease";
 
   return (
     <>
@@ -454,7 +510,9 @@ function Navbar() {
         right: 0,
         zIndex: 1000,
         background: navBg,
-        backdropFilter: "blur(20px)",
+        // Blur only when the nav actually paints a surface: a transparent,
+        // blurred layer can composite a hair off-white over the hero.
+        backdropFilter: navLight && !openMenu ? "none" : "blur(20px)",
         borderBottom: navBorder,
         transition: tx,
       }}
@@ -470,15 +528,7 @@ function Navbar() {
     >
       <div className="r-nav-cluster" style={{ display: "flex", alignItems: "center", gap: 48 }}>
         <a href="#" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}>
-          <span
-            style={{
-              width: 0,
-              height: 0,
-              borderTop: `13px solid ${fg}`,
-              borderLeft: "13px solid transparent",
-              transition: tx,
-            }}
-          />
+          <NoviinMark size={27} color={fg} />
           <span
             style={{
               fontSize: 20,
@@ -488,7 +538,7 @@ function Navbar() {
               transition: tx,
             }}
           >
-            examly
+            noviin
           </span>
         </a>
         <div className="r-hide-mobile" style={{ display: "flex", gap: 32 }}>
@@ -539,6 +589,7 @@ function Navbar() {
           Log In
         </button>
         <button
+          className="r-nav-cta"
           style={{
             background: ctaBg,
             border: `1px solid ${ctaBg}`,
@@ -698,16 +749,9 @@ function MobileMenu({
               onClick={handleClose}
               style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}
             >
-              <span
-                style={{
-                  width: 0,
-                  height: 0,
-                  borderTop: `13px solid ${fg}`,
-                  borderLeft: "13px solid transparent",
-                }}
-              />
+              <NoviinMark size={27} color={fg} />
               <span style={{ fontSize: 20, fontWeight: 600, color: fg, letterSpacing: "-0.5px" }}>
-                examly
+                noviin
               </span>
             </a>
             <button
@@ -1240,6 +1284,7 @@ function Choreography() {
   const brackets = useRef<HTMLDivElement>(null);
   const greenBlock = useRef<HTMLDivElement>(null);
   const greenH = useRef<HTMLHeadingElement>(null);
+  const cue = useRef<HTMLButtonElement>(null);
 
   // Video pool: pick one at random on mount, then cycle to a different random
   // clip whenever the current one ends. videoIdx starts at -1 (sentinel) and
@@ -1299,19 +1344,36 @@ function Choreography() {
       // frame above centre so the dark hero text can sit below it on the
       // white hero background. Matches the .r-hero-text CSS breakpoint.
       const isStacked = window.matchMedia("(max-width: 900px)").matches;
-      gsap.set(frame.current, {
-        xPercent: -50,
-        yPercent: -50,
-        y: isStacked ? -window.innerHeight * 0.28 : 40,
-      });
+      // The frame is positioned by its left/right/top anchors, so the scroll
+      // timeline can drive x/y/scale from a zero transform.
+      gsap.set(frame.current, { x: 0, y: 0 });
+      gsap.set(cue.current, { opacity: 1 });
 
       // Initial: only stage 1 text visible
       gsap.set([t2.current, t3.current, t4.current, t5.current, greenBlock.current], { opacity: 0 });
-      gsap.set(panels.current, { opacity: 0 });
-      gsap.set(edge.current, { opacity: 0 });
+      gsap.set(panels.current!.children, { opacity: 0 });
       gsap.set(brackets.current, { opacity: 0 });
 
+      // The nav is fixed above the pinned stage, so its light/dark theme must
+      // follow the stage's rendered background on every tick — including the
+      // frames GSAP's scrub catches up on after the wheel stops. Reading the
+      // actual colour keeps both colour changes on the exact same frame.
+      let lastNavTheme: "light" | "dark" | null = null;
+      const syncNavTheme = () => {
+        if (!stage.current) return;
+        const rgb = getComputedStyle(stage.current).backgroundColor.match(/[\d.]+/g);
+        if (!rgb || rgb.length < 3) return;
+        const lum =
+          0.299 * Number(rgb[0]) + 0.587 * Number(rgb[1]) + 0.114 * Number(rgb[2]);
+        const theme = lum > 128 ? "light" : "dark";
+        if (theme !== lastNavTheme) {
+          lastNavTheme = theme;
+          window.dispatchEvent(new CustomEvent("noviin:nav-theme", { detail: theme }));
+        }
+      };
+
       const tl = gsap.timeline({
+        onUpdate: syncNavTheme,
         scrollTrigger: {
           trigger: wrap.current,
           start: "top top",
@@ -1320,6 +1382,7 @@ function Choreography() {
           pin: stage.current,
           anticipatePin: 1,
           invalidateOnRefresh: true,
+          onRefresh: syncNavTheme,
         },
       });
 
@@ -1328,23 +1391,25 @@ function Choreography() {
       // ── Stage 1 → 2 ──────────────────────────────────────────────
       tl.addLabel("s1to2")
         .to(t1.current, { opacity: 0, y: -30, duration: 0.4 }, "s1to2")
+        .to(cue.current, { opacity: 0, duration: 0.3 }, "s1to2")
         .to(stage.current, { background: BLACK, duration: 0.8, ease: "power2.inOut" }, "s1to2")
         .to(
           frame.current,
           {
-            x: () => VW() * 0.22,
-            y: 0,
-            scale: 0.42,
-            rotateY: 24,
-            rotateX: 6,
-            rotateZ: -2,
+            // Stacked (≤900px): the panel parks above the stacked copy
+            // instead of sliding out to the side
+            x: () => (isStacked ? 0 : VW() * 0.22),
+            y: () => (isStacked ? -window.innerHeight * 0.3 : 0),
+            scale: isStacked ? 0.4 : 0.42,
+            rotateY: isStacked ? 0 : -32,
+            rotateX: isStacked ? 0 : 6,
+            rotateZ: isStacked ? 0 : -2,
             duration: 1,
             ease: "power2.inOut",
           },
           "s1to2"
         )
-        .to(panels.current, { opacity: 1, duration: 0.6 }, "s1to2+=0.3")
-        .to(edge.current, { opacity: 1, duration: 0.6 }, "s1to2+=0.4")
+        .to(panels.current!.children, { opacity: 1, duration: 0.6, stagger: 0.05 }, "s1to2+=0.3")
         .fromTo(
           t2.current,
           { opacity: 0, y: 40 },
@@ -1362,10 +1427,10 @@ function Choreography() {
           frame.current,
           {
             x: 0,
-            y: () => -window.innerHeight * 0.06,
-            scale: 0.6,
-            rotateY: 4,
-            rotateX: 14,
+            y: () => (isStacked ? -window.innerHeight * 0.26 : -window.innerHeight * 0.06),
+            scale: isStacked ? 0.4 : 0.6,
+            rotateY: isStacked ? 0 : 4,
+            rotateX: isStacked ? 0 : 14,
             rotateZ: 0,
             duration: 1,
             ease: "power2.inOut",
@@ -1387,12 +1452,12 @@ function Choreography() {
         .to(
           frame.current,
           {
-            x: () => -VW() * 0.22,
-            y: 0,
-            scale: 0.42,
-            rotateY: -24,
-            rotateX: 6,
-            rotateZ: 2,
+            x: () => (isStacked ? 0 : -VW() * 0.22),
+            y: () => (isStacked ? -window.innerHeight * 0.26 : 0),
+            scale: isStacked ? 0.4 : 0.42,
+            rotateY: isStacked ? 0 : -24,
+            rotateX: isStacked ? 0 : 6,
+            rotateZ: isStacked ? 0 : 2,
             duration: 1,
             ease: "power2.inOut",
           },
@@ -1410,14 +1475,13 @@ function Choreography() {
       // ── Stage 4 → 5 ──────────────────────────────────────────────
       tl.addLabel("s4to5")
         .to(t4.current, { opacity: 0, y: -30, duration: 0.4 }, "s4to5")
-        .to(panels.current, { opacity: 0, duration: 0.4 }, "s4to5")
-        .to(edge.current, { opacity: 0, duration: 0.4 }, "s4to5")
+        .to(panels.current!.children, { opacity: 0, duration: 0.4 }, "s4to5")
         .to(
           frame.current,
           {
-            x: () => -VW() * 0.34,
-            y: 0,
-            scale: 0.2,
+            x: () => (isStacked ? 0 : -VW() * 0.34),
+            y: () => (isStacked ? -window.innerHeight * 0.26 : 0),
+            scale: isStacked ? 0.34 : 0.2,
             rotateY: 0,
             rotateX: 0,
             rotateZ: 0,
@@ -1448,14 +1512,18 @@ function Choreography() {
         { color: "rgba(242,242,239,1)", stagger: 0.06, duration: 0.4, ease: "none" },
         "s4to5+=0.7"
       );
+
+      // Correct theme for a restored scroll position (refresh mid-page).
+      syncNavTheme();
     }, wrap);
     return () => ctx.revert();
   }, []);
 
   return (
-    <section ref={wrap} style={{ position: "relative", height: "500vh" }}>
+    <section ref={wrap} style={{ position: "relative", height: "500vh", background: HERO_BG }}>
       <div
         ref={stage}
+        data-hero-stage
         style={{
           position: "sticky",
           top: 0,
@@ -1472,78 +1540,95 @@ function Choreography() {
           className="r-hero-text"
           style={{
             position: "absolute",
-            left: "8%",
-            bottom: "12%",
-            maxWidth: 600,
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "0 8%",
             zIndex: 5,
             color: OFF_WHITE,
+            pointerEvents: "none",
           }}
         >
           <div
             style={{
               display: "flex",
+              flexDirection: "column",
               alignItems: "center",
-              gap: 10,
-              marginBottom: 16,
+              maxWidth: 1040,
+              textAlign: "center",
+              pointerEvents: "auto",
             }}
           >
-            <span
-              className="r-hero-eyebrow-tri"
+            <div
               style={{
-                width: 0,
-                height: 0,
-                borderTop: `9px solid ${GREEN_TEXT}`,
-                borderLeft: "9px solid transparent",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 10,
+                marginBottom: 18,
               }}
-            />
-            <span
-              className="r-hero-eyebrow"
-              style={{ fontSize: 11, letterSpacing: 2.4, fontWeight: 600, color: "rgba(255,255,255,0.7)" }}
             >
-              EXAMLY FOR SCHOOLS
-            </span>
+              <span
+                className="r-hero-eyebrow-tri"
+                style={{
+                  width: 0,
+                  height: 0,
+                  borderTop: `9px solid ${GREEN_TEXT}`,
+                  borderLeft: "9px solid transparent",
+                }}
+              />
+              <span
+                className="r-hero-eyebrow"
+                style={{ fontSize: 11, letterSpacing: 2.4, fontWeight: 600, color: "rgba(255,255,255,0.7)" }}
+              >
+                NOVIIN FOR SCHOOLS
+              </span>
+            </div>
+            <h1
+              style={{
+                fontSize: "clamp(32px, 4.8vw, 76px)",
+                fontWeight: 600,
+                lineHeight: 1.04,
+                letterSpacing: "-2.4px",
+                margin: 0,
+                marginBottom: 26,
+                textWrap: "balance",
+              }}
+            >
+              The school management system<br />schools actually trust.
+            </h1>
+            <button
+              className="r-hero-cta"
+              onClick={() => navigate("/signup")}
+              style={{
+                background: OFF_WHITE,
+                border: "none",
+                borderRadius: 999,
+                padding: "12px 22px",
+                color: "#0A0A0A",
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: "pointer",
+                fontFamily: "inherit",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+              }}
+            >
+              Get started ›
+            </button>
           </div>
-          <h1
-            style={{
-              fontSize: "clamp(40px, 5vw, 72px)",
-              fontWeight: 600,
-              lineHeight: 1.04,
-              letterSpacing: "-2.5px",
-              margin: 0,
-              marginBottom: 24,
-            }}
-          >
-            The exam system<br />schools actually trust.
-          </h1>
-          <button
-            className="r-hero-cta"
-            onClick={() => navigate("/signup")}
-            style={{
-              background: OFF_WHITE,
-              border: "none",
-              borderRadius: 999,
-              padding: "12px 22px",
-              color: "#0A0A0A",
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: "pointer",
-              fontFamily: "inherit",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-            }}
-          >
-            Get started ›
-          </button>
         </div>
 
         {/* ── Stage Text: APPLICATIONS (left of video) ── */}
         <StageBlock refEl={t2} side="left">
           <SectionLabel>Applications</SectionLabel>
-          <Heading>Exam systems<br />that actually work.</Heading>
+          <Heading>School operations<br />that actually work.</Heading>
           <Body>
-            Most CBT rollouts in schools fail on exam day. We find the right
-            assessment model, build the system, and own the outcome.
+            Most rollouts fail in the first term, when admissions, fees,
+            attendance and results all fall due. We set the system up, migrate
+            the spreadsheets, and own the outcome.
           </Body>
           <GreenButton>For Schools ›</GreenButton>
           <LogoStrip />
@@ -1574,7 +1659,7 @@ function Choreography() {
               marginBottom: 16,
             }}
           >
-            Reliable testing has no shortcuts.
+            Running a school has no shortcuts.
           </h2>
           <p
             style={{
@@ -1585,9 +1670,9 @@ function Choreography() {
               margin: "0 auto",
             }}
           >
-            Examly works across the assessment stack — from the question banks
-            that benchmark your students, to the proctoring systems that keep
-            every session airtight. Humans stay in the loop.
+            Noviin covers the whole school day — student records, attendance,
+            timetables, fees, results and guardian communication. One system,
+            one source of truth. Your staff stay in the loop.
           </p>
         </div>
 
@@ -1596,9 +1681,9 @@ function Choreography() {
           <SectionLabel>Data</SectionLabel>
           <Heading>The data powering<br />the country's best schools.</Heading>
           <Body>
-            Schools at the frontier run on Examly results. We source insights
-            with precision (25% of admins hold advanced degrees in education)
-            and deliver at the bar exam day demands.
+            Schools at the frontier run on Noviin. We source insights with
+            precision (25% of admins hold advanced degrees in education) and
+            deliver at the pace a school day demands.
           </Body>
           <GreenButton>Explore Data Engine ›</GreenButton>
         </StageBlock>
@@ -1632,7 +1717,7 @@ function Choreography() {
                 margin: 0,
               }}
             >
-              {"90% of the country's leading schools deploy their CBT through Examly."
+              {"90% of the country's leading schools run their school day on Noviin."
                 .split(" ")
                 .map((w, i) => (
                   <span
@@ -1656,20 +1741,21 @@ function Choreography() {
           ref={frame}
           style={{
             position: "absolute",
-            top: "50%",
-            left: "50%",
-            // width clamps against viewport WIDTH (94vw), viewport HEIGHT
-            // (so the 16:9 box always fits under the nav with margin), and a
-            // hard 2200px cap on very large screens.
-            width: "min(94vw, calc((100vh - 110px) * 16 / 9), 2200px)",
-            aspectRatio: "16/9",
+            // Inset panel with rounded corners, matching the reference: a
+            // narrow margin on both sides, a clear gap below the navbar, and
+            // a height that runs to the bottom of the viewport.
+            left: "clamp(12px, 2vw, 32px)",
+            right: "clamp(12px, 2vw, 32px)",
+            top: 100,
+            height: "min(calc(100vh - 130px), 1050px)",
+            minHeight: 360,
             transformOrigin: "center center",
             transformStyle: "preserve-3d",
             willChange: "transform",
             zIndex: 4,
           }}
         >
-          {/* Layered translucent glass panels behind the video, fanned out in 3D space */}
+          {/* Layered glass planes: in front of AND behind the video */}
           <div
             ref={panels}
             style={{
@@ -1679,39 +1765,83 @@ function Choreography() {
               transformStyle: "preserve-3d",
             }}
           >
-            {[0, 1, 2, 3, 4].map((i) => {
-              // Stack panels going INTO the screen using translateZ, with subtle x/y drift
-              const zDepth = -(i + 1) * 60;
-              const xOff = (i + 1) * 14;
-              const yOff = (i + 1) * 6;
+            {/* Parallel outline planes, same size, spaced along Z only */}
+            {PANEL_Z.map((z) => {
+              const front = z > 0;
+              const depth = Math.abs(z) / 360;
+              const isFrontMost = z === Z_FRONT;
               return (
                 <div
-                  key={i}
+                  key={z}
                   style={{
                     position: "absolute",
                     inset: 0,
-                    transform: `translateZ(${zDepth}px) translateX(${xOff}px) translateY(${yOff}px)`,
+                    transform: `translateZ(${z}px)`,
                     borderRadius: 22,
-                    border: "1px solid rgba(255,255,255,0.16)",
-                    background:
-                      "linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005))",
-                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)",
+                    border: `1px solid rgba(255,255,255,${
+                      front ? 0.65 - depth * 0.2 : 0.5 - depth * 0.2
+                    })`,
+                    background: front ? "rgba(255,255,255,0.008)" : "rgba(6,6,6,0.6)",
+                    overflow: isFrontMost ? "hidden" : undefined,
                   }}
-                />
+                >
+                  {/* Contour lines live on the front-most plane, over the footage */}
+                  {isFrontMost && (
+                    <video
+                      ref={edge}
+                      muted
+                      playsInline
+                      autoPlay
+                      loop
+                      aria-hidden
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        filter: "url(#edge-detect)",
+                        mixBlendMode: "screen",
+                        pointerEvents: "none",
+                      }}
+                    />
+                  )}
+                </div>
               );
             })}
-            {/* binary digit decoration in the 3D space around the stack */}
-            {[
-              [4, 6, "0111", -40],
-              [88, 4, "001", -120],
-              [96, 22, "0", -180],
-              [94, 44, "0011", -80],
-              [92, 64, "1", -160],
-              [97, 80, "11", -40],
-              [2, 92, "001", -100],
-              [-4, 38, "1110", -200],
-              [102, 56, "111", -220],
-            ].map(([x, y, v, z], i) => (
+
+            {/* Dashed traces running along Z through every layer + start markers */}
+            {TRACE_Y.map((y) => (
+              <div key={`t${y}`}>
+                <div
+                  style={{
+                    position: "absolute",
+                    left: "5%",
+                    top: `${y}%`,
+                    width: Z_FRONT - Z_BACK,
+                    height: 0,
+                    borderTop: "1px dashed rgba(255,255,255,0.35)",
+                    transformOrigin: "0 0",
+                    transform: `translateZ(${Z_FRONT}px) rotateY(90deg)`,
+                  }}
+                />
+                <span
+                  style={{
+                    position: "absolute",
+                    left: "5%",
+                    top: `${y}%`,
+                    transform: `translateZ(${Z_FRONT}px) translate(-50%, -50%)`,
+                    fontSize: 9,
+                    color: "rgba(255,255,255,0.7)",
+                  }}
+                >
+                  ▽
+                </span>
+              </div>
+            ))}
+
+            {/* Binary labels on the back plane */}
+            {BITS.map(([x, y, v, z], i) => (
               <span
                 key={i}
                 style={{
@@ -1719,35 +1849,33 @@ function Choreography() {
                   left: `${x}%`,
                   top: `${y}%`,
                   transform: `translateZ(${z}px)`,
-                  color: "rgba(255,255,255,0.25)",
-                  fontSize: 11,
+                  color: "rgba(255,255,255,0.3)",
+                  fontSize: 10,
                   fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
                   letterSpacing: 1,
                 }}
               >
-                {v as string}
+                {v}
               </span>
             ))}
           </div>
 
-          {/* The video itself, in a grey-bordered rounded frame */}
+          {/* The video itself — a clean rounded panel with no bezel around it,
+              the way the reference site presents its hero media */}
           <div
+            className="r-media"
             style={{
               position: "absolute",
               inset: 0,
-              background: "#9CA3AF",
-              borderRadius: 16,
-              padding: 12,
-              boxShadow: "0 40px 100px rgba(0,0,0,0.6)",
+              borderRadius: 20,
+              overflow: "hidden",
+              background: BLACK,
             }}
           >
             <div
               style={{
                 width: "100%",
                 height: "100%",
-                borderRadius: 8,
-                overflow: "hidden",
-                background: BLACK,
                 position: "relative",
               }}
             >
@@ -1764,32 +1892,13 @@ function Choreography() {
                   filter: "brightness(0.92) saturate(1.05)",
                 }}
               />
-              {/* Edge-detected duplicate video, white-on-transparent, screen-blended */}
-              <video
-                ref={edge}
-                muted
-                playsInline
-                autoPlay
-                loop
-                aria-hidden
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  filter: "url(#edge-detect)",
-                  mixBlendMode: "screen",
-                  pointerEvents: "none",
-                }}
-              />
               {/* gradient overlay so text on stage 1 stays readable */}
               <div
                 style={{
                   position: "absolute",
                   inset: 0,
                   background:
-                    "linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.55) 100%)",
+                    "radial-gradient(115% 100% at 50% 48%, rgba(0,0,0,0.58) 0%, rgba(0,0,0,0.30) 55%, rgba(0,0,0,0.62) 100%)",
                   pointerEvents: "none",
                 }}
               />
@@ -1817,6 +1926,37 @@ function Choreography() {
               />
             ))}
           </div>
+
+          {/* Scroll cue sits on the media panel itself, like the reference */}
+          <button
+            ref={cue}
+            className="r-hero-scroll"
+            onClick={() =>
+              window.scrollTo({ top: window.innerHeight * 0.85, behavior: "smooth" })
+            }
+            aria-label="Scroll to the next section"
+            style={{
+              position: "absolute",
+              right: 22,
+              bottom: 110,
+              width: 46,
+              height: 46,
+              borderRadius: 12,
+              border: "1px solid rgba(255,255,255,0.35)",
+              background: "rgba(0,0,0,0.28)",
+              backdropFilter: "blur(10px)",
+              color: OFF_WHITE,
+              fontSize: 18,
+              lineHeight: 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              zIndex: 6,
+            }}
+          >
+            ↓
+          </button>
         </div>
       </div>
     </section>
@@ -1919,7 +2059,7 @@ function LogoStrip() {
     { src: "/images/jamb.png", alt: "JAMB", h: 36 },
   ];
   return (
-    <div style={{ marginTop: 44 }}>
+    <div className="r-logostrip" style={{ marginTop: 44 }}>
       <div
         style={{
           fontSize: 11,
@@ -2048,15 +2188,15 @@ function TestimonialCard({ item }: { item: Testimonial }) {
 
 // ── CAPABILITIES (pill tabs + coloured card mockup, à la Anthropic) ──────────
 
-type CapKey = "study" | "practice" | "test" | "review" | "analyze" | "author";
+type CapKey = "records" | "attendance" | "fees" | "results" | "insights" | "timetable";
 
 const CAP_ICONS: Record<CapKey, React.ReactNode> = {
-  study: <BookOpen size={16} />,
-  practice: <PencilSimple size={16} />,
-  test: <CalendarCheck size={16} />,
-  review: <ClockCounterClockwise size={16} />,
-  analyze: <ChartBar size={16} />,
-  author: <Code size={16} />,
+  records: <IdentificationCard size={16} />,
+  attendance: <CalendarCheck size={16} />,
+  fees: <Wallet size={16} />,
+  results: <GraduationCap size={16} />,
+  insights: <ChartBar size={16} />,
+  timetable: <CalendarBlank size={16} />,
 };
 
 // Mobile detection hook for things that can't be done via CSS alone
@@ -2178,152 +2318,159 @@ const CAPS: {
   desc: React.ReactNode;
 }[] = [
   {
-    key: "study",
-    label: "Study",
+    key: "records",
+    label: "Records",
     bg: "#C5764C",
-    heading: "Study",
+    heading: "Records",
     desc: (
       <>
-        Custom study guides built from your{" "}
+        One profile per student, from{" "}
         <Tip
-          title="Aligned to your curriculum"
-          body="We detect topics, weighting, and exam-board alignment from your syllabus automatically."
+          title="Admission to graduation"
+          body="Applications, enrolment, guardians, medical notes, transfers and leavers on one timeline — not five spreadsheets."
         >
-          syllabus
+          admission
         </Tip>{" "}
-        and{" "}
+        onward. Every term's attendance, fees and results sit on{" "}
         <Tip
-          title="A decade of WAEC / NECO"
-          body="Indexed answer keys and marking schemes from 2015 onward, queryable by topic."
+          title="One record, four views"
+          body="Admissions sees documents, the bursar sees balances, the form teacher sees attendance and results."
         >
-          past papers
+          that same record
         </Tip>
-        {" "}— summaries, formulas, and worked examples in one place.
+        .
       </>
     ),
   },
   {
-    key: "practice",
-    label: "Practice",
+    key: "attendance",
+    label: "Attendance",
     bg: "#9FB29A",
-    heading: "Practice",
+    heading: "Attendance",
     desc: (
       <>
-        Drill any topic with{" "}
+        Mark the register in seconds,{" "}
         <Tip
-          title="Adapts to you"
-          body="Questions get harder when you're nailing them and ease back when you stall — no boring grind, no over-reach."
+          title="Per class or per teacher"
+          body="Form teachers mark their own class; the front office can mark any class when a teacher is away."
         >
-          adaptive difficulty
+          class by class
+        </Tip>
+        , and let{" "}
+        <Tip
+          title="Guardian alerts"
+          body="Absence alerts reach guardians the same morning, by SMS or in the guardian portal."
+        >
+          guardians know the same morning
+        </Tip>
+        .
+      </>
+    ),
+  },
+  {
+    key: "fees",
+    label: "Fees",
+    bg: "#3A6F84",
+    heading: "Fees",
+    desc: (
+      <>
+        Invoices, part-payments and receipts in{" "}
+        <Tip
+          title="One ledger"
+          body="Deposits, bank transfers and cash receipts reconcile against the same running balance."
+        >
+          one ledger
         </Tip>
         .{" "}
         <Tip
-          title="Worked solutions"
-          body="Every answer is followed by a one-screen explanation and a link to related drills on the same idea."
+          title="Reminders that escalate"
+          body="Reminders go out on your schedule — 7, 14 and 30 days — by SMS, email or the guardian portal."
         >
-          Instant feedback
+          Reminders
         </Tip>{" "}
-        on every answer, no waiting for marks.
+        go out on schedule, and the day's collections are{" "}
+        <Tip
+          title="Reconciled daily"
+          body="Every payment posts to the student's ledger, so the balance sheet is current before you close."
+        >
+          reconciled
+        </Tip>{" "}
+        before closing.
       </>
     ),
   },
   {
-    key: "test",
-    label: "Test",
-    bg: "#3A6F84",
-    heading: "Test",
-    desc: (
-      <>
-        Run real mock exams under WAEC/NECO/JAMB conditions — timed,{" "}
-        <Tip
-          title="Camera + tab-lock"
-          body="Webcam monitoring, full-screen enforcement, and answer encryption end-to-end. Suitable for high-stakes mocks."
-        >
-          proctored
-        </Tip>
-        ,{" "}
-        <Tip
-          title="Instant results"
-          body="MCQs are graded the second the student submits. Essays get queued for the teacher with a draft rubric attached."
-        >
-          scored automatically
-        </Tip>
-        .
-      </>
-    ),
-  },
-  {
-    key: "review",
-    label: "Review",
+    key: "results",
+    label: "Results",
     bg: "#9A99B6",
-    heading: "Review",
+    heading: "Results",
     desc: (
       <>
-        Walk through every question you got wrong with a{" "}
+        Enter marks once and{" "}
         <Tip
-          title="Step-by-step"
-          body="Every solution is broken into reasoning steps with the relevant formula or rule pinned at the top."
+          title="Weighted automatically"
+          body="CA, projects and exams combine with the weights your school sets per subject."
         >
-          worked solution
+          scores compute themselves
         </Tip>{" "}
-        and a link to a{" "}
+        into positions, class averages and{" "}
         <Tip
-          title="Targeted drills"
-          body="We pick the next 10 questions on the exact concept you missed — adaptive, not just topic-tagged."
+          title="Printable or portal"
+          body="Report cards render as PDFs for printing, or appear instantly in the guardian portal."
         >
-          related practice
-        </Tip>{" "}
-        set.
-      </>
-    ),
-  },
-  {
-    key: "analyze",
-    label: "Analyze",
-    bg: "#B5708A",
-    heading: "Analyze",
-    desc: (
-      <>
-        Track your scores{" "}
-        <Tip
-          title="Trend analysis"
-          body="Side-by-side breakdown of your last 8 mocks with delta per subject and per topic."
-        >
-          across mocks
-        </Tip>{" "}
-        and subjects. See exactly where you're improving and where you've{" "}
-        <Tip
-          title="Plateau detection"
-          body="Flags subjects where 3+ consecutive mocks haven't moved more than 2 points so you know where to push."
-        >
-          plateaued
+          report cards
         </Tip>
         .
       </>
     ),
   },
   {
-    key: "author",
-    label: "Author",
-    bg: "#C8D2B5",
-    heading: "Author",
+    key: "insights",
+    label: "Insights",
+    bg: "#B5708A",
+    heading: "Insights",
     desc: (
       <>
-        For teachers — build question papers{" "}
+        Enrolment, attendance and collections in one view,{" "}
         <Tip
-          title="AI-assisted authoring"
-          body="Type a brief like 'SS3 Biology, 30 questions, mixed difficulty' — full drafts arrive in 90 seconds."
+          title="By class, term or campus"
+          body="Compare any two periods, or roll every campus into one board report."
         >
-          from a prompt
+          by class and term
         </Tip>
-        , tag by topic and difficulty,{" "}
+        . See where a class is{" "}
         <Tip
-          title="Class-aware delivery"
-          body="Pick your cohorts, set the window, and we handle scheduling, monitoring, and scoring end-to-end."
+          title="Flagged early"
+          body="We flag a class when attendance or collections drop more than 5 points for three weeks running."
         >
-          publish to your classes
+          slipping
         </Tip>{" "}
-        in one click.
+        before the term ends.
+      </>
+    ),
+  },
+  {
+    key: "timetable",
+    label: "Timetable",
+    bg: "#C8D2B5",
+    heading: "Timetable",
+    desc: (
+      <>
+        Build the{" "}
+        <Tip
+          title="Clash-free by construction"
+          body="Teachers, rooms and double periods are checked as you place them — no manual grid-staring."
+        >
+          term's timetable
+        </Tip>{" "}
+        from your staffing and rooms, then{" "}
+        <Tip
+          title="Everyone sees the same grid"
+          body="Staff, students and guardians get the published version instantly, substitutions included."
+        >
+          publish it once
+        </Tip>{" "}
+        to every portal.
       </>
     ),
   },
@@ -2378,7 +2525,7 @@ function PromptCard({
   );
 }
 
-function StudyMockup() {
+function RecordsMockup() {
   return (
     <div
       style={{
@@ -2391,31 +2538,31 @@ function StudyMockup() {
       }}
     >
       <h3 style={{ fontSize: 30, fontWeight: 700, margin: 0, marginBottom: 4, lineHeight: 1.15 }}>
-        Quadratic Equations
+        Adaeze Okonkwo
       </h3>
       <h3 style={{ fontSize: 22, fontWeight: 600, margin: 0, marginBottom: 22, color: "rgba(0,0,0,0.7)" }}>
-        SS3 Mathematics study guide
+        JSS 2A · Admission NV-2418
       </h3>
-      <h4 style={{ fontSize: 18, fontWeight: 700, margin: 0, marginBottom: 12 }}>Table of contents</h4>
+      <h4 style={{ fontSize: 18, fontWeight: 700, margin: 0, marginBottom: 12 }}>On file</h4>
       <ul style={{ margin: 0, paddingLeft: 22, fontSize: 15, color: "#1A1A1A", lineHeight: 1.7 }}>
-        <li>Standard form and roots</li>
-        <li>Completing the square</li>
-        <li>The quadratic formula</li>
-        <li>Discriminant & nature of roots</li>
-        <li>Worked WAEC past questions</li>
+        <li>Guardian & emergency contacts</li>
+        <li>Medical notes and allergies</li>
+        <li>Fees ledger · balance ₦0</li>
+        <li>Attendance this term · 96%</li>
+        <li>Term 1 result · 74% average</li>
       </ul>
       <h4 style={{ fontSize: 18, fontWeight: 700, margin: 0, marginTop: 24, marginBottom: 10 }}>
-        Quadratic formula
+        This term
       </h4>
       <p style={{ fontSize: 14.5, color: "#1A1A1A", lineHeight: 1.7, margin: 0 }}>
-        <strong>For ax² + bx + c = 0:</strong> x = ( −b ± √(b² − 4ac) ) / 2a. Use the discriminant
-        Δ = b² − 4ac to tell the nature of the roots.
+        <strong>JSS 2A · Term 2:</strong> present 58 of 60 days, fees settled in full on 14 Jan,
+        and a 74% average across nine subjects. Guardian contact confirmed this week.
       </p>
     </div>
   );
 }
 
-function PracticeMockup() {
+function AttendanceMockup() {
   return (
     <div
       style={{
@@ -2428,8 +2575,8 @@ function PracticeMockup() {
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 18, fontSize: 12, letterSpacing: 1.5 }}>
-        <span style={{ color: "rgba(255,255,255,0.55)" }}>PRACTICE · MATHEMATICS</span>
-        <span style={{ color: "rgba(255,255,255,0.55)" }}>7 / 20</span>
+        <span style={{ color: "rgba(255,255,255,0.55)" }}>ATTENDANCE · JSS 2A</span>
+        <span style={{ color: "rgba(255,255,255,0.55)" }}>28 / 32 MARKED</span>
       </div>
       <div
         style={{
@@ -2443,33 +2590,47 @@ function PracticeMockup() {
         <div style={{ width: "35%", height: "100%", background: "#2E6F5A", borderRadius: 4 }} />
       </div>
       <div style={{ fontSize: 15.5, lineHeight: 1.55, marginBottom: 18 }}>
-        Find the value of <em>x</em> in the equation <strong>2x² − 7x + 3 = 0</strong>.
+        Tuesday register · morning session · form teacher <strong>Mrs. Adebayo</strong>
       </div>
       {[
-        { key: "A", text: "x = 1/2 or x = 3", correct: false },
-        { key: "B", text: "x = −1/2 or x = −3", correct: false },
-        { key: "C", text: "x = 1/2 or x = 3, selected", correct: true },
-        { key: "D", text: "x = 2 or x = 3", correct: false },
-      ].map((o, i) => {
-        const selected = i === 2;
+        { name: "Adaeze Okonkwo", status: "Present", tone: "ok" },
+        { name: "Tunde Balogun", status: "Present", tone: "ok" },
+        { name: "Chiamaka Mba", status: "Late · 08:14", tone: "warn" },
+        { name: "Yusuf Eze", status: "Absent · guardian alerted", tone: "bad" },
+      ].map((row) => {
+        const color =
+          row.tone === "ok" ? "rgba(255,255,255,0.78)" : row.tone === "warn" ? "#F0C97A" : "#FC8181";
+        const border =
+          row.tone === "ok"
+            ? "rgba(255,255,255,0.08)"
+            : row.tone === "warn"
+              ? "rgba(240,201,122,0.35)"
+              : "rgba(252,129,129,0.3)";
+        const background =
+          row.tone === "ok"
+            ? "rgba(255,255,255,0.02)"
+            : row.tone === "warn"
+              ? "rgba(240,201,122,0.08)"
+              : "rgba(252,129,129,0.08)";
         return (
           <div
-            key={o.key}
+            key={row.name}
             style={{
-              border: `1px solid ${selected ? "rgba(46,111,90,0.6)" : "rgba(255,255,255,0.08)"}`,
-              background: selected ? "rgba(46,111,90,0.14)" : "rgba(255,255,255,0.02)",
+              border: `1px solid ${border}`,
+              background,
               borderRadius: 10,
               padding: "11px 14px",
               marginBottom: 8,
               fontSize: 14,
-              color: selected ? "#9FD9C0" : "rgba(255,255,255,0.78)",
+              color,
               display: "flex",
               alignItems: "center",
+              justifyContent: "space-between",
               gap: 12,
             }}
           >
-            <span style={{ fontWeight: 700, fontSize: 13, opacity: 0.85 }}>{o.key}.</span>
-            <span>{o.text.replace(", selected", "")}</span>
+            <span>{row.name}</span>
+            <span style={{ fontSize: 12.5, opacity: 0.9 }}>{row.status}</span>
           </div>
         );
       })}
@@ -2486,13 +2647,13 @@ function PracticeMockup() {
           fontWeight: 600,
         }}
       >
-        Submit answer
+        Submit register
       </button>
     </div>
   );
 }
 
-function TestMockup() {
+function FeesMockup() {
   return (
     <div
       style={{
@@ -2508,9 +2669,9 @@ function TestMockup() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18 }}>
         <div>
           <div style={{ fontSize: 11, letterSpacing: 2, color: "rgba(255,255,255,0.5)", marginBottom: 4 }}>
-            WAEC MOCK · CHEMISTRY
+            FEES · TERM 2 INVOICES
           </div>
-          <div style={{ fontSize: 18, fontWeight: 700 }}>Question 14 / 50</div>
+          <div style={{ fontSize: 18, fontWeight: 700 }}>12 students overdue</div>
         </div>
         <div
           style={{
@@ -2524,7 +2685,7 @@ function TestMockup() {
             fontVariantNumeric: "tabular-nums",
           }}
         >
-          01:23:45
+          ₦1.24m
         </div>
       </div>
       <div
@@ -2539,9 +2700,14 @@ function TestMockup() {
           marginBottom: 16,
         }}
       >
-        Which of the following gases would be liberated when dilute sulphuric acid reacts with zinc metal?
+        JSS 2A · Term 2 — 12 of 32 guardians have a balance older than 30 days.
       </div>
-      {["A.  Oxygen", "B.  Hydrogen", "C.  Sulphur dioxide", "D.  Carbon dioxide"].map((opt) => (
+      {[
+        "Tuition  ·  ₦820,000",
+        "Boarding  ·  ₦310,000",
+        "Books & materials  ·  ₦74,000",
+        "Transport  ·  ₦36,000",
+      ].map((opt) => (
         <div
           key={opt}
           style={{
@@ -2569,7 +2735,7 @@ function TestMockup() {
             fontSize: 13,
           }}
         >
-          Previous
+          Send reminders
         </button>
         <button
           style={{
@@ -2583,14 +2749,14 @@ function TestMockup() {
             fontWeight: 600,
           }}
         >
-          Next →
+          Record payment
         </button>
       </div>
     </div>
   );
 }
 
-function ReviewMockup() {
+function ResultsMockup() {
   return (
     <div
       style={{
@@ -2603,10 +2769,10 @@ function ReviewMockup() {
       }}
     >
       <div style={{ fontSize: 12, letterSpacing: 1.8, color: "rgba(0,0,0,0.5)", marginBottom: 6, fontWeight: 600 }}>
-        QUESTION 14 · CHEMISTRY MOCK
+        TERM 2 · REPORT CARD
       </div>
       <div style={{ fontSize: 16, fontWeight: 500, lineHeight: 1.55, marginBottom: 18 }}>
-        Which gas is liberated when dilute H₂SO₄ reacts with zinc metal?
+        Adaeze Okonkwo · JSS 2A — 74% average, 4th of 32.
       </div>
       <div
         style={{
@@ -2623,7 +2789,7 @@ function ReviewMockup() {
           textDecoration: "line-through",
         }}
       >
-        <span style={{ fontWeight: 700 }}>Your answer ·</span> C. Sulphur dioxide
+        <span style={{ fontWeight: 700 }}>Last term ·</span> 68% average
       </div>
       <div
         style={{
@@ -2639,29 +2805,29 @@ function ReviewMockup() {
           gap: 10,
         }}
       >
-        <span style={{ fontWeight: 700 }}>Correct ·</span> B. Hydrogen
+        <span style={{ fontWeight: 700 }}>This term ·</span> 74% average (+6)
       </div>
       <div style={{ fontSize: 12, letterSpacing: 1.5, color: "rgba(0,0,0,0.5)", marginBottom: 6, fontWeight: 600 }}>
-        EXPLANATION
+        SUBJECT BREAKDOWN
       </div>
       <p style={{ fontSize: 14, color: "rgba(0,0,0,0.7)", lineHeight: 1.6, margin: 0 }}>
-        Reactive metals above hydrogen in the activity series displace H from dilute non-oxidising acids.
-        Zn + H₂SO₄ → ZnSO₄ + H₂↑. SO₂ would only appear with concentrated, hot H₂SO₄.
+        Maths 78 · English 71 · Basic Science 76 · Social Studies 74 · French 69 · Computer 81.
+        Form teacher: steady term, strongest in Computer and Basic Science.
       </p>
       <div style={{ marginTop: 18, fontSize: 13, color: "#2E6F5A", fontWeight: 600 }}>
-        Related practice — Activity series of metals →
+        Open full report card →
       </div>
     </div>
   );
 }
 
-function AnalyzeMockup() {
+function InsightsMockup() {
   const data = [
-    { sub: "English", scores: [62, 68, 71, 74] },
-    { sub: "Maths", scores: [55, 60, 68, 78] },
-    { sub: "Physics", scores: [70, 72, 71, 73] },
-    { sub: "Chemistry", scores: [66, 64, 60, 58] },
-    { sub: "Biology", scores: [72, 75, 77, 80] },
+    { sub: "JSS 1", scores: [72, 75, 79, 84] },
+    { sub: "JSS 2", scores: [61, 68, 74, 84] },
+    { sub: "JSS 3", scores: [80, 79, 77, 81] },
+    { sub: "SS 1", scores: [58, 57, 54, 52] },
+    { sub: "SS 2", scores: [69, 72, 76, 80] },
   ];
   const max = 100;
   return (
@@ -2678,12 +2844,12 @@ function AnalyzeMockup() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
         <div>
           <div style={{ fontSize: 12, letterSpacing: 1.8, color: "rgba(0,0,0,0.5)", marginBottom: 4, fontWeight: 600 }}>
-            LAST 4 MOCKS · BY SUBJECT
+            TERM 1 → TERM 4 · FEES COLLECTED
           </div>
-          <div style={{ fontSize: 22, fontWeight: 700 }}>Performance trend</div>
+          <div style={{ fontSize: 22, fontWeight: 700 }}>Collections by class</div>
         </div>
         <div style={{ display: "flex", gap: 10, fontSize: 11, color: "rgba(0,0,0,0.55)" }}>
-          {["M1", "M2", "M3", "M4"].map((m) => (
+          {["T1", "T2", "T3", "T4"].map((m) => (
             <span key={m}>{m}</span>
           ))}
         </div>
@@ -2725,14 +2891,14 @@ function AnalyzeMockup() {
           lineHeight: 1.5,
         }}
       >
-        <strong>Pattern · </strong>Maths up 23 points across 4 mocks. Chemistry slipping — focus practice
-        here.
+        <strong>Pattern · </strong>JSS 2 collections up 23 points since term 1. SS 1 is slipping — 18
+        balances over 60 days.
       </div>
     </div>
   );
 }
 
-function AuthorMockup() {
+function TimetableMockup() {
   return (
     <div
       style={{
@@ -2754,90 +2920,90 @@ function AuthorMockup() {
         ))}
       </div>
       <div style={{ color: "rgba(255,255,255,0.55)" }}>
-        Reading syllabus<span style={{ opacity: 0.4 }}>...</span>
+        Reading staffing and rooms<span style={{ opacity: 0.4 }}>...</span>
       </div>
-      <div>* WAEC Biology · 2020-2025 coverage</div>
-      <div>* 30 questions · mixed difficulty</div>
+      <div>* 24 classes · 38 teachers · 12 rooms</div>
+      <div>* 6 periods a day · double periods allowed</div>
       <br />
-      <div style={{ color: "rgba(255,255,255,0.55)" }}>Generating items...</div>
-      <div style={{ color: "#9FD9C0" }}>✓ Cell biology and organisation: 6 questions</div>
-      <div style={{ color: "#9FD9C0" }}>✓ Genetics &amp; heredity: 8 questions</div>
-      <div style={{ color: "#9FD9C0" }}>✓ Ecology: 7 questions</div>
-      <div style={{ color: "#9FD9C0" }}>✓ Evolution: 4 questions</div>
-      <div style={{ color: "#9FD9C0" }}>✓ Plant &amp; animal physiology: 5 questions</div>
+      <div style={{ color: "rgba(255,255,255,0.55)" }}>Building timetable...</div>
+      <div style={{ color: "#9FD9C0" }}>✓ Mathematics: 6 periods placed</div>
+      <div style={{ color: "#9FD9C0" }}>✓ English: 5 periods placed</div>
+      <div style={{ color: "#9FD9C0" }}>✓ Basic Science: 4 periods placed</div>
+      <div style={{ color: "#9FD9C0" }}>✓ Social Studies: 3 periods placed</div>
+      <div style={{ color: "#9FD9C0" }}>✓ French: 3 periods placed</div>
       <br />
-      <div style={{ color: "rgba(255,255,255,0.55)" }}>Tagging by topic and difficulty...</div>
-      <div style={{ color: "rgba(255,255,255,0.55)" }}>Building answer keys with explanations...</div>
+      <div style={{ color: "rgba(255,255,255,0.55)" }}>Checking teacher and room clashes...</div>
+      <div style={{ color: "rgba(255,255,255,0.55)" }}>Balancing free periods across staff...</div>
       <br />
       <div>
-        Paper ready · <span style={{ color: "#9FD9C0" }}>biology-ss3-mock-04.pdf</span>
+        Timetable ready · <span style={{ color: "#9FD9C0" }}>jss2-term2-timetable.pdf</span>
       </div>
-      <div style={{ color: "rgba(255,255,255,0.55)" }}>Publish to SS3 cohort? <span style={{ color: "#9FD9C0" }}>(y/N)</span></div>
+      <div style={{ color: "rgba(255,255,255,0.55)" }}>Publish to staff portal? <span style={{ color: "#9FD9C0" }}>(y/N)</span></div>
     </div>
   );
 }
 
 function CapContent({ k }: { k: CapKey }) {
-  if (k === "study") {
+  if (k === "records") {
     return (
       <div style={{ display: "flex", gap: 40, alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
         <PromptCard
-          prompt="Build me a study guide for quadratic equations with worked examples and 5 WAEC-style practice problems."
+          prompt="Pull up Adaeze Okonkwo's record for this term. Show attendance, fees balance and last term's result."
           attachments={[
-            { name: "WAEC Past Papers", meta: "12 mb", ext: "pdf" },
-            { name: "Maths Syllabus", meta: "1.2 mb", ext: "pdf" },
+            { name: "Admissions register", meta: "2.1 mb", ext: "pdf" },
+            { name: "Student handbook", meta: "1.2 mb", ext: "pdf" },
           ]}
         />
-        <StudyMockup />
+        <RecordsMockup />
       </div>
     );
   }
-  if (k === "practice") {
+  if (k === "attendance") {
     return (
       <div style={{ display: "flex", gap: 40, alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
-        <PracticeMockup />
-        <PromptCard prompt="Drill me on coordinate geometry. Mix easy and hard. 20 questions, no time limit." />
+        <AttendanceMockup />
+        <PromptCard prompt="Mark today's JSS 2A register and flag everyone under 80% attendance this term." />
       </div>
     );
   }
-  if (k === "test") {
+  if (k === "fees") {
     return (
       <div style={{ display: "flex", gap: 40, alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
-        <TestMockup />
-        <PromptCard prompt="Run a WAEC mock for Chemistry. 50 questions, 2 hours, proctored. No going back to previous questions." />
+        <FeesMockup />
+        <PromptCard prompt="Send term 2 reminders to every guardian with a balance over 30 days, then log payments as they come in." />
       </div>
     );
   }
-  if (k === "review") {
+  if (k === "results") {
     return (
       <div style={{ display: "flex", gap: 40, alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
-        <PromptCard prompt="Walk me through every Chemistry question I got wrong last week, grouped by topic. Show worked solutions." />
-        <ReviewMockup />
+        <PromptCard prompt="Compile JSS 2A report cards for term 2, with subject positions and form-teacher comments." />
+        <ResultsMockup />
       </div>
     );
   }
-  if (k === "analyze") {
+  if (k === "insights") {
     return (
       <div style={{ display: "flex", gap: 40, alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
-        <AnalyzeMockup />
+        <InsightsMockup />
         <PromptCard
-          prompt="Compare my last 4 mock results across subjects. Where am I improving fastest and where am I stalling?"
-          attachments={[{ name: "Mock results", meta: "4 mocks", ext: "xlsx" }]}
+          prompt="Compare fee collection and attendance across classes this term. Where are we slipping?"
+          attachments={[{ name: "Term ledger", meta: "1 term", ext: "xlsx" }]}
         />
       </div>
     );
   }
-  // author
+  // timetable
   return (
     <div style={{ display: "flex", gap: 40, alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
-      <AuthorMockup />
-      <PromptCard prompt="> examly build me a 30-question Biology paper at WAEC standard, mixed difficulty, with answer key." />
+      <TimetableMockup />
+      <PromptCard prompt="> noviin build the JSS 2 timetable for term 2 — 24 classes, 38 teachers, no clashes." />
     </div>
   );
 }
 
 function Capabilities() {
-  const [active, setActive] = useState<CapKey>("study");
+  const [active, setActive] = useState<CapKey>("records");
   const [overflowOpen, setOverflowOpen] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const overflowRef = useRef<HTMLDivElement>(null);
@@ -2905,12 +3071,16 @@ function Capabilities() {
           ref={overflowRef}
           style={{
             display: "inline-flex",
+            flexWrap: "wrap",
+            justifyContent: "center",
             background: "rgba(255,255,255,0.04)",
             border: "1px solid rgba(255,255,255,0.06)",
             borderRadius: 999,
             padding: 5,
-            gap: 2,
+            columnGap: 2,
+            rowGap: 4,
             position: "relative",
+            maxWidth: "100%",
           }}
         >
           {visibleIdxs.map((i) => {
@@ -3086,7 +3256,7 @@ function Capabilities() {
       <div
         className="r-cap-meta"
         style={{
-          maxWidth: 1100,
+          maxWidth: 1400,
           margin: "0 auto",
           marginTop: 60,
           display: "grid",
@@ -3129,6 +3299,9 @@ function Capabilities() {
 function TestimonialStack() {
   const [front, setFront] = useState(0);
   const N = TESTIMONIALS.length;
+  // On phones the deck tightens up and the stack gets taller, so the cards
+  // behind the front one are never clipped by the section gutter.
+  const isMobile = useIsMobile(768);
 
   const next = () => setFront((f) => (f + 1) % N);
   const prev = () => setFront((f) => (f - 1 + N) % N);
@@ -3141,7 +3314,7 @@ function TestimonialStack() {
         style={{
           position: "relative",
           width: "100%",
-          height: 380,
+          height: isMobile ? 470 : 380,
         }}
       >
         {TESTIMONIALS.map((t, i) => {
@@ -3183,6 +3356,11 @@ function TestimonialStack() {
             opacity = 0;
             zIndex = 10;
           }
+          if (isMobile) {
+            translateX *= 0.28;
+            translateY *= 0.5;
+            rotate *= 0.5;
+          }
           const onClick = rel === 0 ? undefined : () => setFront(i);
           return (
             <div
@@ -3193,7 +3371,7 @@ function TestimonialStack() {
                 position: "absolute",
                 top: "50%",
                 left: "50%",
-                width: "min(580px, calc(100% - 80px))",
+                width: isMobile ? "min(580px, calc(100% - 24px))" : "min(580px, calc(100% - 80px))",
                 transform: `translate(calc(-50% + ${translateX}px), calc(-50% + ${translateY}px)) rotate(${rotate}deg) scale(${scale})`,
                 opacity,
                 zIndex,
@@ -3342,7 +3520,7 @@ function Latest() {
               color: "#0A0A0A",
             }}
           >
-            What schools say about Examly.
+            What schools say about Noviin.
           </h2>
         </div>
 
@@ -3744,7 +3922,7 @@ function Footer() {
               marginBottom: 14,
             }}
           >
-            Exam software that runs when the bell rings, not after.
+            School software that runs when the bell rings, not after.
           </h2>
           <p
             style={{
@@ -3757,7 +3935,7 @@ function Footer() {
               lineHeight: 1.2,
             }}
           >
-            <span style={{ color: FG }}>Try Examly</span> on your next mock today.
+            <span style={{ color: FG }}>Try Noviin</span> at your school this term.
           </p>
           <button
             onClick={scrollTop}
@@ -3828,16 +4006,9 @@ function Footer() {
       >
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
-            <span
-              style={{
-                width: 0,
-                height: 0,
-                borderTop: `13px solid ${FG}`,
-                borderLeft: "13px solid transparent",
-              }}
-            />
+            <NoviinMark size={27} color={FG} />
             <span style={{ fontSize: 20, fontWeight: 600, color: FG, letterSpacing: "-0.5px" }}>
-              examly
+              noviin
             </span>
           </div>
           <p
@@ -3850,8 +4021,9 @@ function Footer() {
               marginBottom: 28,
             }}
           >
-            The CBT platform built for the way African schools actually examine —
-            offline-first, district-scale, and exam-day-proof.
+            The school management system built for the way African schools
+            actually run — offline-first, district-scale, and built for the
+            school day.
           </p>
           <div style={{ marginBottom: 16 }}>
             <span
@@ -4507,6 +4679,8 @@ function PrevIcon() {
 }
 
 // ── COOKIE BANNER ─────────────────────────────────────────────────────────────
+// Clean full-width bottom bar (matches the reference site): copy + policy links
+// on the left, three right-aligned actions, small dismiss X top-right.
 
 type CookiePrefs = {
   essential: true;
@@ -4514,7 +4688,20 @@ type CookiePrefs = {
   marketing: boolean;
 };
 
-const COOKIE_KEY = "examly.cookie.prefs.v1";
+const COOKIE_KEY = "noviin.cookie.prefs.v1";
+
+const ghostButtonStyle = (active: boolean) => ({
+  background: active ? "rgba(255,255,255,0.08)" : "transparent",
+  border: "1px solid rgba(255,255,255,0.35)",
+  borderRadius: 10,
+  padding: "10px 18px",
+  color: "#F2F2EF",
+  fontSize: 13.5,
+  fontWeight: 500,
+  cursor: "pointer",
+  fontFamily: "inherit",
+  transition: "background 0.2s, border-color 0.2s",
+});
 
 function CookieBanner() {
   const [visible, setVisible] = useState(false);
@@ -4524,7 +4711,7 @@ function CookieBanner() {
     analytics: true,
     marketing: false,
   });
-  const card = useRef<HTMLDivElement>(null);
+  const bar = useRef<HTMLDivElement>(null);
   const modal = useRef<HTMLDivElement>(null);
   const scrim = useRef<HTMLDivElement>(null);
 
@@ -4537,10 +4724,10 @@ function CookieBanner() {
   }, []);
 
   useEffect(() => {
-    if (!visible || !card.current) return;
+    if (!visible || !bar.current) return;
     gsap.fromTo(
-      card.current,
-      { y: 60, opacity: 0 },
+      bar.current,
+      { y: 40, opacity: 0 },
       { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" }
     );
   }, [visible]);
@@ -4572,13 +4759,13 @@ function CookieBanner() {
     }
   };
 
-  const hideCard = () => {
-    if (!card.current) {
+  const hideBar = () => {
+    if (!bar.current) {
       setVisible(false);
       return;
     }
-    gsap.to(card.current, {
-      y: 60,
+    gsap.to(bar.current, {
+      y: 40,
       opacity: 0,
       duration: 0.45,
       ease: "power2.in",
@@ -4591,19 +4778,25 @@ function CookieBanner() {
     setPrefs(p);
     persist(p);
     setSettingsOpen(false);
-    hideCard();
+    hideBar();
   };
   const rejectAll = () => {
     const p: CookiePrefs = { essential: true, analytics: false, marketing: false };
     setPrefs(p);
     persist(p);
     setSettingsOpen(false);
-    hideCard();
+    hideBar();
   };
   const savePrefs = () => {
     persist(prefs);
     setSettingsOpen(false);
-    hideCard();
+    hideBar();
+  };
+
+  const linkStyle = {
+    color: "#F2F2EF" as const,
+    textDecoration: "underline" as const,
+    fontWeight: 500 as const,
   };
 
   if (!visible) return null;
@@ -4611,144 +4804,113 @@ function CookieBanner() {
   return (
     <>
       <div
-        ref={card}
+        ref={bar}
         role="dialog"
         aria-label="Cookie preferences"
         className="r-cookie"
         style={{
           position: "fixed",
           left: 28,
-          bottom: 28,
-          width: "min(420px, calc(100vw - 56px))",
-          background: "rgba(14,16,20,0.86)",
+          right: 28,
+          bottom: 32,
+          zIndex: 1200,
+          background: "rgba(0,0,0,0.62)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          border: "1px solid rgba(255,255,255,0.08)",
-          borderRadius: 18,
-          padding: 22,
+          border: "1px solid rgba(255,255,255,0.10)",
+          borderRadius: 14,
+          padding: "14px 24px",
           color: "#F2F2EF",
-          boxShadow: "0 24px 60px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.35)",
-          zIndex: 1200,
+          fontSize: 13.5,
+          lineHeight: 1.5,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 20,
           fontFamily: "inherit",
+          boxShadow: "0 20px 50px rgba(0,0,0,0.35)",
+          minHeight: 56,
         }}
       >
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
-          <CookieIcon />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div
-              style={{
-                fontSize: 15,
-                fontWeight: 600,
-                color: "#F2F2EF",
-                marginBottom: 6,
-                letterSpacing: "-0.2px",
-              }}
-            >
-              Cookies, briefly
-            </div>
-            <p
-              style={{
-                fontSize: 13.5,
-                color: "rgba(255,255,255,0.62)",
-                lineHeight: 1.55,
-                margin: 0,
-              }}
-            >
-              We use cookies to keep Examly running, improve it, and remember
-              your preferences. You're in control of what gets stored.
-            </p>
-          </div>
-          <button
-            onClick={rejectAll}
-            aria-label="Reject all and dismiss"
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "rgba(255,255,255,0.5)",
-              width: 24,
-              height: 24,
-              padding: 0,
-              cursor: "pointer",
-              fontSize: 18,
-              lineHeight: 1,
-              flexShrink: 0,
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "#F2F2EF")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
-          >
-            ×
-          </button>
+        {/* Copy + policy links (left) */}
+        <div style={{ flex: 1, minWidth: 0, fontSize: 13, color: "rgba(255,255,255,0.88)", lineHeight: 1.55 }}>
+          <p style={{ margin: 0, display: "inline" }}>
+            This website uses cookies and similar technologies to ensure
+            functionality, evaluate website usage, and to serve marketing
+            content. Visit our{" "}
+          </p>
+          <a href="/privacy" style={linkStyle} onClick={(e) => e.preventDefault()}>Cookie Policy</a>{" "}
+          and{" "}
+          <a href="/privacy" style={linkStyle} onClick={(e) => e.preventDefault()}>Privacy Policy</a>{" "}
+          for more information.
         </div>
 
-        <div className="r-cookie-actions" style={{ display: "flex", gap: 8, marginTop: 18, flexWrap: "wrap" }}>
+        {/* Dismiss (top-right X) */}
+        <button
+          onClick={hideBar}
+          aria-label="Dismiss"
+          style={{
+            background: "transparent",
+            border: "none",
+            color: "rgba(255,255,255,0.5)",
+            width: 22,
+            height: 22,
+            padding: 0,
+            cursor: "pointer",
+            fontSize: 18,
+            lineHeight: 1,
+            flexShrink: 0,
+            marginRight: 6,
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#F2F2EF")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
+        >
+          ×
+        </button>
+
+        {/* Actions (right) */}
+        <div style={{ display: "flex", gap: 10, alignItems: "center", flexShrink: 0 }}>
           <button
             onClick={() => setSettingsOpen(true)}
-            style={{
-              flex: "0 0 auto",
-              background: "transparent",
-              border: "1px solid rgba(255,255,255,0.18)",
-              borderRadius: 10,
-              padding: "10px 16px",
-              color: "rgba(255,255,255,0.85)",
-              fontSize: 13.5,
-              fontWeight: 500,
-              cursor: "pointer",
-              fontFamily: "inherit",
-              transition: "background 0.2s",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.06)")}
+            style={ghostButtonStyle(false)}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.10)")}
             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
           >
-            Customize
+            Cookie Preferences
           </button>
           <button
             onClick={rejectAll}
-            style={{
-              flex: "1 1 auto",
-              minWidth: 100,
-              background: "transparent",
-              border: "1px solid rgba(255,255,255,0.18)",
-              borderRadius: 10,
-              padding: "10px 16px",
-              color: "rgba(255,255,255,0.85)",
-              fontSize: 13.5,
-              fontWeight: 500,
-              cursor: "pointer",
-              fontFamily: "inherit",
-              transition: "background 0.2s",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.06)")}
+            style={ghostButtonStyle(false)}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.10)")}
             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
           >
-            Reject non-essential
+            Reject Cookies
           </button>
           <button
             onClick={acceptAll}
             style={{
-              flex: "1 1 auto",
-              minWidth: 100,
-              background: `linear-gradient(135deg, ${GREEN_BRIGHT}, ${GREEN})`,
+              background: "#F2F2EF",
               border: "none",
               borderRadius: 10,
-              padding: "10px 16px",
-              color: "#F2F2EF",
+              padding: "10px 18px",
+              color: "#0A0A0A",
               fontSize: 13.5,
               fontWeight: 600,
               cursor: "pointer",
               fontFamily: "inherit",
-              boxShadow: `0 6px 20px ${GREEN}55`,
+              boxShadow: "0 6px 20px rgba(0,0,0,0.25)",
               transition: "transform 0.2s, box-shadow 0.2s",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = "translateY(-1px)";
-              e.currentTarget.style.boxShadow = `0 10px 26px ${GREEN}77`;
+              e.currentTarget.style.boxShadow = "0 10px 26px rgba(0,0,0,0.35)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = `0 6px 20px ${GREEN}55`;
+              e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.25)";
             }}
           >
-            Accept all
+            Accept Cookies ›
           </button>
         </div>
       </div>
@@ -4800,7 +4962,7 @@ function CookieBanner() {
                   Cookie preferences
                 </h3>
                 <p style={{ fontSize: 14, color: "rgba(0,0,0,0.55)", lineHeight: 1.55, margin: 0 }}>
-                  Decide what Examly is allowed to remember about you. You can
+                  Decide what Noviin is allowed to remember about you. You can
                   change this anytime from the footer.
                 </p>
               </div>
@@ -4837,7 +4999,7 @@ function CookieBanner() {
               />
               <PrefRow
                 title="Marketing"
-                desc="Lets us show relevant content to schools that might find Examly useful."
+                desc="Lets us show relevant content to schools that might find Noviin useful."
                 on={prefs.marketing}
                 onChange={(v) => setPrefs({ ...prefs, marketing: v })}
               />
@@ -4906,26 +5068,6 @@ function CookieBanner() {
         </>
       )}
     </>
-  );
-}
-
-function CookieIcon() {
-  return (
-    <div
-      style={{
-        width: 36,
-        height: 36,
-        borderRadius: 10,
-        background: "rgba(255,255,255,0.06)",
-        border: "1px solid rgba(255,255,255,0.08)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexShrink: 0,
-      }}
-    >
-      <MoonStars size={20} weight="fill" color="#E2C893" />
-    </div>
   );
 }
 
@@ -5024,223 +5166,6 @@ function ToggleSwitch({
   );
 }
 
-// ── LOADING SCREEN ────────────────────────────────────────────────────────────
-// One <polygon> with 4 vertices animates through every stage. The four points
-// slide between three keyframe states without the element ever unmounting or
-// crossfading — the bar literally IS the triangle, just earlier in time.
-//
-//   Stage 1: top-right + bottom-right x slide 0 → 100   (bar fills)
-//   Stage 2: all 4 points slide to triangle positions   (bar opens into ▲)
-//   Stage 3: SVG element scales 1 → 70 from triangle's centroid (covers screen)
-
-type Pt = [number, number];
-
-function pointsToAttr(pts: Pt[]) {
-  return pts.map(([x, y]) => `${x.toFixed(3)},${y.toFixed(3)}`).join(" ");
-}
-
-function LoadingScreen({ onDone }: { onDone: () => void }) {
-  const overlay = useRef<HTMLDivElement>(null);
-  const poly = useRef<SVGPolygonElement>(null);
-  const track = useRef<SVGRectElement>(null);
-  const blackBg = useRef<SVGRectElement>(null);
-  const whiteUse = useRef<SVGUseElement>(null);
-  const counter = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-
-    const writePoly = (s: Record<string, Pt>) => {
-      if (poly.current) {
-        poly.current.setAttribute(
-          "points",
-          pointsToAttr([s.tl, s.tr, s.br, s.bl])
-        );
-      }
-    };
-
-    const lerp = (a: Record<string, Pt>, b: Record<string, Pt>, t: number) => ({
-      tl: [a.tl[0] + (b.tl[0] - a.tl[0]) * t, a.tl[1] + (b.tl[1] - a.tl[1]) * t] as Pt,
-      tr: [a.tr[0] + (b.tr[0] - a.tr[0]) * t, a.tr[1] + (b.tr[1] - a.tr[1]) * t] as Pt,
-      br: [a.br[0] + (b.br[0] - a.br[0]) * t, a.br[1] + (b.br[1] - a.br[1]) * t] as Pt,
-      bl: [a.bl[0] + (b.bl[0] - a.bl[0]) * t, a.bl[1] + (b.bl[1] - a.bl[1]) * t] as Pt,
-    });
-
-    const keyframes = () => {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const cx = vw / 2;
-      const cy = vh / 2;
-      // Scale bar + small-triangle sizes to the viewport so the intro doesn't
-      // dwarf phone screens. Caps stay at desktop values.
-      const BAR_W = Math.min(220, vw * 0.6);
-      const BAR_H = Math.min(16, vw * 0.04);
-      const triS = Math.min(240, vw * 0.55);
-      const hugeS = Math.max(vw, vh) * 3;
-      return {
-        zero: {
-          tl: [cx - BAR_W / 2, cy - BAR_H / 2],
-          tr: [cx - BAR_W / 2, cy - BAR_H / 2],
-          br: [cx - BAR_W / 2, cy + BAR_H / 2],
-          bl: [cx - BAR_W / 2, cy + BAR_H / 2],
-        } as Record<string, Pt>,
-        bar: {
-          tl: [cx - BAR_W / 2, cy - BAR_H / 2],
-          tr: [cx + BAR_W / 2, cy - BAR_H / 2],
-          br: [cx + BAR_W / 2, cy + BAR_H / 2],
-          bl: [cx - BAR_W / 2, cy + BAR_H / 2],
-        } as Record<string, Pt>,
-        tri: {
-          tl: [cx - (2 * triS) / 3, cy - triS / 3],
-          tr: [cx + triS / 3, cy - triS / 3],
-          br: [cx + triS / 3, cy + (2 * triS) / 3],
-          bl: [cx - (2 * triS) / 3, cy - triS / 3],
-        } as Record<string, Pt>,
-        huge: {
-          tl: [cx - (2 * hugeS) / 3, cy - hugeS / 3],
-          tr: [cx + hugeS / 3, cy - hugeS / 3],
-          br: [cx + hugeS / 3, cy + (2 * hugeS) / 3],
-          bl: [cx - (2 * hugeS) / 3, cy - hugeS / 3],
-        } as Record<string, Pt>,
-      };
-    };
-
-    const positionTrack = () => {
-      if (!track.current) return;
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const w = Math.min(220, vw * 0.6);
-      const h = Math.min(16, vw * 0.04);
-      track.current.setAttribute("x", String(vw / 2 - w / 2));
-      track.current.setAttribute("y", String(vh / 2 - h / 2));
-      track.current.setAttribute("width", String(w));
-      track.current.setAttribute("height", String(h));
-    };
-
-    const prog = { p: 0 };
-    const updateShape = () => {
-      const p = prog.p;
-      const k = keyframes();
-      let s: Record<string, Pt>;
-      if (p <= 1) s = lerp(k.zero, k.bar, p);
-      else if (p <= 2) s = lerp(k.bar, k.tri, p - 1);
-      else s = lerp(k.tri, k.huge, p - 2);
-      writePoly(s);
-      positionTrack();
-
-      if (counter.current) {
-        const fillPct = Math.min(p, 1);
-        counter.current.textContent = String(Math.floor(fillPct * 100)).padStart(3, "0");
-      }
-    };
-    updateShape();
-
-    const tl = gsap.timeline();
-
-    // ── Stage 1: visible loading bar (track + white fill) — prog 0 → 1 ──
-    tl.to(prog, { p: 1, duration: 2.0, ease: "power1.inOut", onUpdate: updateShape });
-
-    // ── Stage 2: track fades, bar morphs into triangle (still white on black) ──
-    tl.to(track.current, { opacity: 0, duration: 0.3, ease: "power2.in" });
-    tl.to(
-      prog,
-      { p: 2, duration: 1.0, ease: "power3.inOut", onUpdate: updateShape },
-      "<"
-    );
-    tl.to(counter.current, { opacity: 0, y: 16, duration: 0.5, ease: "power2.in" }, "<");
-
-    // ── Stage 3: black-bg + white-fill fade as the cutout layer is revealed,
-    //            and the triangle grows huge so the page shows through it ──
-    tl.to(
-      [blackBg.current, whiteUse.current],
-      { opacity: 0, duration: 0.5, ease: "power2.in" },
-      "+=0.15"
-    );
-    tl.to(
-      prog,
-      { p: 3, duration: 1.3, ease: "power3.in", onUpdate: updateShape },
-      "<+0.05"
-    );
-    tl.to(overlay.current, { opacity: 0, duration: 0.35, ease: "power2.out" }, "-=0.15");
-
-    tl.call(() => {
-      document.body.style.overflow = "";
-      onDone();
-    });
-
-    const onResize = () => updateShape();
-    window.addEventListener("resize", onResize);
-
-    return () => {
-      tl.kill();
-      window.removeEventListener("resize", onResize);
-      document.body.style.overflow = "";
-    };
-  }, [onDone]);
-
-  return (
-    <div
-      ref={overlay}
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 99999,
-        overflow: "hidden",
-        background: "transparent",
-        fontFamily:
-          "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      }}
-    >
-      <svg
-        width="100%"
-        height="100%"
-        style={{ position: "absolute", inset: 0, display: "block" }}
-      >
-        <defs>
-          {/* The single morphing polygon lives here, invisible until used */}
-          <polygon ref={poly} id="loader-shape" />
-          <mask id="loader-mask">
-            <rect width="100%" height="100%" fill="white" />
-            {/* Same polygon used as a black "hole" in the mask */}
-            <use href="#loader-shape" fill="black" />
-          </mask>
-        </defs>
-
-        {/* Layer 1 (bottom): black with polygon-shaped hole — page shows through hole */}
-        <rect width="100%" height="100%" fill="#000" mask="url(#loader-mask)" />
-
-        {/* Layer 2: opaque black covering Layer 1 during phases 1–2; fades phase 3 */}
-        <rect ref={blackBg} width="100%" height="100%" fill="#000" />
-
-        {/* Layer 3: track (visible phase 1, fades during phase 2 morph) */}
-        <rect ref={track} fill="rgba(255,255,255,0.16)" />
-
-        {/* Layer 4 (top): same polygon rendered white — the visible "fill" /
-            triangle through phases 1–2; fades out during phase 3 so the cutout
-            beneath becomes the only visible representation of the shape */}
-        <use ref={whiteUse} href="#loader-shape" fill="#fff" />
-      </svg>
-
-      <div
-        ref={counter}
-        style={{
-          position: "absolute",
-          bottom: "clamp(18px, 4vw, 32px)",
-          left: "clamp(18px, 4vw, 32px)",
-          color: "#fff",
-          fontSize: "clamp(44px, 12vw, 72px)",
-          fontWeight: 300,
-          letterSpacing: "-2px",
-          lineHeight: 1,
-          willChange: "transform, opacity",
-        }}
-      >
-        000
-      </div>
-    </div>
-  );
-}
-
 // ── ROOT ──────────────────────────────────────────────────────────────────────
 
 export default function Home() {
@@ -5302,6 +5227,11 @@ export default function Home() {
       .r-show-mobile { display: none; }
       *, *::before, *::after { box-sizing: border-box; }
 
+      /* One gutter for the whole page: every section, overlay and card shares
+         it, so left edges line up from the navbar down to the footer at each
+         breakpoint instead of drifting 19 / 23 / 31px apart. */
+      :root { --nv-gutter: 5%; }
+
       @media (max-width: 1280px) {
         .r-nav { padding: 20px 32px !important; }
       }
@@ -5325,42 +5255,49 @@ export default function Home() {
         .r-cap-meta h3 { font-size: 30px !important; }
         .r-cap-meta p { font-size: 16px !important; }
 
-        /* Footer */
-        .r-footer-grid { grid-template-columns: 1.4fr 1fr 1fr !important; gap: 40px !important; }
+        /* Footer — brand gets its own row, link columns stay aligned in three */
+        .r-footer-grid { grid-template-columns: 1fr 1fr 1fr !important; gap: 40px !important; }
+        .r-footer-grid > div:first-child { grid-column: 1 / -1; }
       }
 
       @media (max-width: 900px) {
-        /* Portrait tablet: hero text needs the same "below the video, dark
-           on white bg" treatment as phones because the centred 16:9 frame
-           is too narrow to overlay text on */
-        .r-hero-text {
-          left: 6% !important;
-          right: 6% !important;
-          bottom: auto !important;
-          top: 46% !important;
-          max-width: 100% !important;
-          color: #0A0A0A !important;
-        }
-        .r-hero-text h1 { color: #0A0A0A !important; font-size: clamp(30px, 5.4vw, 48px) !important; }
-        .r-hero-text .r-hero-eyebrow { color: rgba(0,0,0,0.55) !important; }
-        .r-hero-text .r-hero-eyebrow-tri { border-top-color: ${GREEN} !important; }
-        .r-hero-text .r-hero-cta {
-          background: #0A0A0A !important;
-          color: ${OFF_WHITE} !important;
-        }
+        :root { --nv-gutter: 24px; }
+
+        /* Six pillar labels no longer fit one pill row — let them wrap instead
+           of scrolling off the card */
+        .r-cap-pills > div { flex-wrap: wrap !important; justify-content: center !important; }
+        .r-cap-pills > div > button { margin: 1px 0 !important; }
+
+        /* Footer CTA stacks: heading above the keycaps */
+        .r-footer-cta { grid-template-columns: 1fr !important; gap: 48px !important; }
+
+        /* Hero keeps the desktop composition — edge-to-edge media panel with
+           the headline centred on top of it — just with tighter type */
+        .r-hero-text { padding: 0 var(--nv-gutter) !important; }
+        .r-hero-text h1 { font-size: clamp(30px, 6vw, 48px) !important; letter-spacing: -1.4px !important; }
+        .r-media { border-radius: 16px !important; }
 
         /* Stage 2 ("Applications") and Stage 4 ("Data") side panels — on
            narrow screens there's no room next to the video, so they restack
-           below it spanning the full width. The video is small + centred at
-           these stages so a top: ~58% landing point sits clear of it. */
+           under it, centred like the phone references */
         .r-stage-block {
           top: 58% !important;
           bottom: auto !important;
-          left: 6% !important;
-          right: 6% !important;
+          left: var(--nv-gutter) !important;
+          right: var(--nv-gutter) !important;
           max-width: 100% !important;
           transform: none !important;
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          text-align: center !important;
         }
+        .r-stage-block > div { justify-content: center !important; }
+        .r-stage-block > div > div { justify-content: center !important; }
+        /* The partner strip is a desktop footnote; drop it so the stacked copy
+           fits the pinned viewport on a phone */
+        .r-stage-block .r-logostrip { display: none !important; }
+        .r-green-block { top: 58% !important; }
         .r-stage-block h2 { font-size: clamp(26px, 5vw, 40px) !important; line-height: 1.1 !important; margin-bottom: 14px !important; }
         .r-stage-block p { font-size: 15px !important; line-height: 1.55 !important; margin-bottom: 22px !important; }
 
@@ -5374,6 +5311,8 @@ export default function Home() {
       }
 
       @media (max-width: 768px) {
+        :root { --nv-gutter: 18px; }
+
         .r-hide-mobile { display: none !important; }
         .r-show-mobile { display: inline-flex !important; }
 
@@ -5386,29 +5325,22 @@ export default function Home() {
            down a touch more for phones. */
         .r-stage-block h2 { font-size: clamp(22px, 6.2vw, 32px) !important; }
         .r-stage-block p { font-size: 14px !important; }
-        .r-hero-text {
-          left: 6% !important;
-          right: 6% !important;
-          bottom: auto !important;
-          top: 44% !important;
-          max-width: 100% !important;
-          color: #0A0A0A !important;
-        }
-        .r-hero-text h1 { font-size: clamp(26px, 7vw, 40px) !important; color: #0A0A0A !important; }
-        .r-hero-text .r-hero-eyebrow { color: rgba(0,0,0,0.55) !important; }
-        .r-hero-text .r-hero-eyebrow-tri { border-top-color: ${GREEN} !important; }
-        .r-hero-text .r-hero-cta {
-          background: #0A0A0A !important;
-          color: ${OFF_WHITE} !important;
-        }
-        .r-green-block { right: 4% !important; left: 4% !important; width: auto !important; padding: 30px 22px !important; }
+        .r-hero-text h1 { font-size: clamp(28px, 7.4vw, 40px) !important; letter-spacing: -1.1px !important; }
+        .r-hero-text { padding: 0 var(--nv-gutter) !important; }
+
+        /* Navbar matches the reference phone bar: logo, a stretched Get
+           Started button, then the square menu toggle */
+        .r-nav > div:last-child { flex: 1 1 auto !important; }
+        .r-nav-cta { flex: 1 1 auto !important; padding: 13px 16px !important; font-size: 15px !important; }
+        .r-show-mobile { width: 44px !important; height: 44px !important; border-radius: 12px !important; }
+        .r-green-block { right: var(--nv-gutter) !important; left: var(--nv-gutter) !important; width: auto !important; padding: 30px 22px !important; }
         .r-green-block h2 { font-size: clamp(24px, 6.5vw, 36px) !important; }
-        .r-reliable-text { left: 16px !important; right: 16px !important; bottom: 6% !important; }
+        .r-reliable-text { left: var(--nv-gutter) !important; right: var(--nv-gutter) !important; bottom: 6% !important; }
         .r-reliable-text h2 { font-size: clamp(22px, 6vw, 32px) !important; }
 
         /* Capabilities */
         .r-cap-pills { padding: 0 5% !important; }
-        .r-cap-card { padding: 30px 18px !important; min-height: 0 !important; border-radius: 18px !important; margin: 0 12px !important; }
+        .r-cap-card { padding: 30px 18px !important; min-height: 0 !important; border-radius: 18px !important; margin: 0 !important; }
         .r-cap-content { gap: 24px !important; }
         .r-cap-content > * { max-width: 100% !important; }
         .r-cap-meta { grid-template-columns: 1fr !important; gap: 24px !important; }
@@ -5426,22 +5358,28 @@ export default function Home() {
         .r-keycaps-wrap > div { width: 96px !important; height: 96px !important; }
         .r-keycaps-wrap button { font-size: 38px !important; border-radius: 22px !important; }
 
-        /* Cookie banner */
-        .r-cookie { left: 12px !important; right: 12px !important; bottom: 12px !important; width: auto !important; max-width: none !important; padding: 18px !important; }
-        .r-cookie-actions { flex-direction: column !important; }
-        .r-cookie-actions button { width: 100% !important; flex: 1 1 auto !important; }
+        /* Cookie banner — full-width bottom bar stacks on phones */
+        .r-cookie { left: 12px !important; right: 12px !important; bottom: 12px !important; width: auto !important; max-width: none !important; padding: 14px 16px !important; flex-direction: column !important; align-items: stretch !important; gap: 12px !important; min-height: auto !important; }
+        .r-cookie > div:first-child { order: 1 !important; }
+        .r-cookie button[aria-label="Dismiss"] { order: 2 !important; align-self: flex-start !important; margin-right: 0 !important; }
+        .r-cookie > div:last-child { order: 3 !important; width: 100% !important; }
+        .r-cookie > div:last-child button { width: 100% !important; flex: 1 1 auto !important; }
 
         /* Music toggle */
         .r-music { right: 14px !important; bottom: 14px !important; width: 44px !important; height: 44px !important; }
       }
 
       @media (max-width: 480px) {
+        :root { --nv-gutter: 14px; }
+
         /* Navbar — give the logo and CTA enough room without crowding */
         .r-nav { padding: 12px 14px !important; }
 
         /* Hero — scale type down so it doesn't crowd the small viewport */
-        .r-hero-text h1 { font-size: clamp(22px, 7.5vw, 30px) !important; }
+        .r-hero-text h1 { font-size: clamp(26px, 8.4vw, 34px) !important; letter-spacing: -0.9px !important; }
         .r-hero-text .r-hero-cta { padding: 10px 18px !important; font-size: 13px !important; }
+        .r-media { border-radius: 14px !important; }
+        .r-hero-scroll { width: 40px !important; height: 40px !important; right: 14px !important; bottom: 14px !important; }
 
         /* Stage 3 + 5 */
         .r-reliable-text h2 { font-size: clamp(20px, 6vw, 28px) !important; }
@@ -5457,6 +5395,10 @@ export default function Home() {
         .r-cookie { padding: 14px !important; }
         .r-music { width: 42px !important; height: 42px !important; right: 12px !important; bottom: 12px !important; }
       }
+
+      /* Capability description sits in the second column — cap its measure so
+         it doesn't run the full width of the widened meta block */
+      .r-cap-meta p { max-width: 640px; }
     `;
     document.head.appendChild(style);
 
@@ -5485,7 +5427,7 @@ export default function Home() {
       <Footer />
       <MusicToggle />
       <CookieBanner />
-      {intro && <LoadingScreen onDone={() => setIntro(false)} />}
+      {intro && <NoviinIntro onDone={() => setIntro(false)} />}
     </div>
   );
 }

@@ -11,7 +11,7 @@ import {
   AnimatedCheck,
   AuthShell,
   APP_NAME,
-  NexusMark,
+  NoviinMark,
   TextField,
   SelectField,
   PrimaryButton,
@@ -222,7 +222,7 @@ export default function Signup() {
     beginSlowWatch(
       isResend
         ? ["Resending your code…", "The network is being slow…", "Still trying — your code is on its way…"]
-        : ["Checking your email…", "Reaching the Nexus servers…", "Recording your progress…"],
+        : ["Checking your email…", "Reaching the Noviin servers…", "Recording your progress…"],
     );
     window.setTimeout(() => {
       endSlowWatch();
@@ -410,7 +410,7 @@ export default function Signup() {
       <div style={{ maxWidth: 460, margin: "0 auto", paddingTop: "9vh" }}>
         {/* Centered brand + headline, Notion-style */}
         <div className="nx-fade-up" style={{ display: "flex", justifyContent: "center", marginBottom: 26 }}>
-          <NexusMark size={46} />
+          <NoviinMark size={46} />
         </div>
         <h1
           className="nx-fade-up"
@@ -758,7 +758,7 @@ export default function Signup() {
             }}
             noValidate
           >
-            <Question label="What's your role at the school?" hint="This helps us tailor Nexus to your workflow.">
+            <Question label="What's your role at the school?" hint="This helps us tailor Noviin to your workflow.">
               <SelectField
                 label="Role"
                 name="role"

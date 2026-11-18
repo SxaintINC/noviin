@@ -8,6 +8,7 @@
 // status chips, and a circle-check progress indicator.
 
 import React from "react";
+import { NoviinLoader } from "./NoviinLoader";
 import {
   Check,
   X,
@@ -50,31 +51,45 @@ export const C = {
 export const SERIF = "'Source Serif 4', 'Iowan Old Style', Georgia, serif";
 
 // The one true product name. Change it here and it changes everywhere.
-export const APP_NAME = "Nexus";
+export const APP_NAME = "Noviin";
 
 // ── LOGO ──────────────────────────────────────────────────────────────────────
-// Nexus mark: a circular emblem of three arcs joined by three "people" dots.
+// Noviin mark: the slatted sphere, clipped to its disc. The clip id is unique
+// per instance so several marks can share a page without colliding.
 
-export function NexusMark({ size = 30, color = C.ink }: { size?: number; color?: string }) {
-  const R = 40;
-  const CIRC = 2 * Math.PI * R;
-  const gap = CIRC / 3 - 82; // three equal gaps between the arcs
+export function NoviinMark({ size = 30, color = C.ink }: { size?: number; color?: string }) {
+  const clip = `noviin-disc-${React.useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100" fill="none" aria-hidden>
-      <circle
-        cx="50"
-        cy="50"
-        r={R}
-        stroke={color}
-        strokeWidth="13"
-        strokeLinecap="round"
-        strokeDasharray={`${82} ${gap}`}
-        transform="rotate(-58 50 50)"
-      />
-      <g fill={color}>
-        <circle cx="50" cy="25" r="10.5" />
-        <circle cx="28" cy="62.5" r="10.5" />
-        <circle cx="72" cy="62.5" r="10.5" />
+    <svg
+      width={size}
+      height={size}
+      viewBox="205 216 528 528"
+      role="img"
+      aria-label="Noviin"
+      style={{ color }}
+    >
+      <defs>
+        <clipPath id={clip}>
+          <circle cx="469" cy="480" r="259" />
+        </clipPath>
+      </defs>
+      <g
+        clipPath={`url(#${clip})`}
+        fill="currentColor"
+        stroke="currentColor"
+        strokeWidth="6"
+        strokeLinejoin="round"
+      >
+        <rect x="340" y="190" width="245" height="70" rx="14" />
+        <rect x="200" y="295" width="275" height="26" rx="12" />
+        <rect x="553" y="295" width="150" height="22" rx="11" />
+        <path d="M200 351H388Q394 351 394 357V367Q394 373 400 373H585Q591 373 591 367V357Q591 351 597 351H740V391H200Z" />
+        <path d="M200 424H343Q349 424 349 430V437Q349 443 355 443H655Q661 443 661 437V430Q661 424 667 424H740V460H200Z" />
+        <path d="M200 508H360Q368 508 372 514L378 520H678Q684 520 684 514V502Q684 496 690 496H740V532H200Z" />
+        <path d="M200 566H288Q294 566 294 572V576Q294 582 300 582H404Q410 582 410 588V593Q410 599 416 599H590Q596 599 596 593V572Q596 566 602 566H740V607H200Z" />
+        <rect x="561" y="630" width="150" height="22" rx="11" />
+        <path d="M200 648H368Q374 648 374 654V662Q374 668 380 668H508A6 6 0 0 1 508 680H200Z" />
+        <rect x="355" y="713" width="235" height="80" rx="14" />
       </g>
     </svg>
   );
@@ -83,7 +98,7 @@ export function NexusMark({ size = 30, color = C.ink }: { size?: number; color?:
 export function Logo({ color = C.ink, size = 20 }: { color?: string; size?: number }) {
   return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: 9 }}>
-      <NexusMark size={size * 1.55} color={color} />
+      <NoviinMark size={size * 1.55} color={color} />
       <span
         style={{
           fontSize: size + 2,
@@ -775,9 +790,7 @@ export function PageLoader({ messages }: { messages: string[] }) {
         gap: 20,
       }}
     >
-      <div style={{ animation: "nexuspulse 1.5s ease-in-out infinite" }}>
-        <NexusMark size={46} />
-      </div>
+      <NoviinLoader size={118} color={C.ink} />
       <div
         style={{
           display: "flex",
@@ -794,7 +807,7 @@ export function PageLoader({ messages }: { messages: string[] }) {
         </span>
       </div>
       <style>
-        {"@keyframes nexuspulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(0.92);opacity:0.7}}@keyframes nexusfade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}"}
+        {"@keyframes nexusfade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}"}
       </style>
     </div>
   );
