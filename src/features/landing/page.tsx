@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { NoviinMark } from "../../shared/ui/kit";
+import { NoviinLoader } from "../../shared/ui/NoviinLoader";
 import {
   BookOpen,
   CalendarCheck,
@@ -5004,155 +5005,28 @@ function ToggleSwitch({
 }
 
 // ── LOADING SCREEN ────────────────────────────────────────────────────────────
-// One <polygon> with 4 vertices animates through every stage. The four points
-// slide between three keyframe states without the element ever unmounting or
-// crossfading — the bar literally IS the triangle, just earlier in time.
-//
-//   Stage 1: top-right + bottom-right x slide 0 → 100   (bar fills)
-//   Stage 2: all 4 points slide to triangle positions   (bar opens into ▲)
-//   Stage 3: SVG element scales 1 → 70 from triangle's centroid (covers screen)
-
-type Pt = [number, number];
-
-function pointsToAttr(pts: Pt[]) {
-  return pts.map(([x, y]) => `${x.toFixed(3)},${y.toFixed(3)}`).join(" ");
-}
+// First load: the Noviin mark assembles itself while a ring draws once around
+// it, then the overlay lifts to reveal the page underneath.
 
 function LoadingScreen({ onDone }: { onDone: () => void }) {
   const overlay = useRef<HTMLDivElement>(null);
-  const poly = useRef<SVGPolygonElement>(null);
-  const track = useRef<SVGRectElement>(null);
-  const blackBg = useRef<SVGRectElement>(null);
-  const whiteUse = useRef<SVGUseElement>(null);
-  const counter = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
 
-    const writePoly = (s: Record<string, Pt>) => {
-      if (poly.current) {
-        poly.current.setAttribute(
-          "points",
-          pointsToAttr([s.tl, s.tr, s.br, s.bl])
-        );
-      }
-    };
-
-    const lerp = (a: Record<string, Pt>, b: Record<string, Pt>, t: number) => ({
-      tl: [a.tl[0] + (b.tl[0] - a.tl[0]) * t, a.tl[1] + (b.tl[1] - a.tl[1]) * t] as Pt,
-      tr: [a.tr[0] + (b.tr[0] - a.tr[0]) * t, a.tr[1] + (b.tr[1] - a.tr[1]) * t] as Pt,
-      br: [a.br[0] + (b.br[0] - a.br[0]) * t, a.br[1] + (b.br[1] - a.br[1]) * t] as Pt,
-      bl: [a.bl[0] + (b.bl[0] - a.bl[0]) * t, a.bl[1] + (b.bl[1] - a.bl[1]) * t] as Pt,
-    });
-
-    const keyframes = () => {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const cx = vw / 2;
-      const cy = vh / 2;
-      // Scale bar + small-triangle sizes to the viewport so the intro doesn't
-      // dwarf phone screens. Caps stay at desktop values.
-      const BAR_W = Math.min(220, vw * 0.6);
-      const BAR_H = Math.min(16, vw * 0.04);
-      const triS = Math.min(240, vw * 0.55);
-      const hugeS = Math.max(vw, vh) * 3;
-      return {
-        zero: {
-          tl: [cx - BAR_W / 2, cy - BAR_H / 2],
-          tr: [cx - BAR_W / 2, cy - BAR_H / 2],
-          br: [cx - BAR_W / 2, cy + BAR_H / 2],
-          bl: [cx - BAR_W / 2, cy + BAR_H / 2],
-        } as Record<string, Pt>,
-        bar: {
-          tl: [cx - BAR_W / 2, cy - BAR_H / 2],
-          tr: [cx + BAR_W / 2, cy - BAR_H / 2],
-          br: [cx + BAR_W / 2, cy + BAR_H / 2],
-          bl: [cx - BAR_W / 2, cy + BAR_H / 2],
-        } as Record<string, Pt>,
-        tri: {
-          tl: [cx - (2 * triS) / 3, cy - triS / 3],
-          tr: [cx + triS / 3, cy - triS / 3],
-          br: [cx + triS / 3, cy + (2 * triS) / 3],
-          bl: [cx - (2 * triS) / 3, cy - triS / 3],
-        } as Record<string, Pt>,
-        huge: {
-          tl: [cx - (2 * hugeS) / 3, cy - hugeS / 3],
-          tr: [cx + hugeS / 3, cy - hugeS / 3],
-          br: [cx + hugeS / 3, cy + (2 * hugeS) / 3],
-          bl: [cx - (2 * hugeS) / 3, cy - hugeS / 3],
-        } as Record<string, Pt>,
-      };
-    };
-
-    const positionTrack = () => {
-      if (!track.current) return;
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const w = Math.min(220, vw * 0.6);
-      const h = Math.min(16, vw * 0.04);
-      track.current.setAttribute("x", String(vw / 2 - w / 2));
-      track.current.setAttribute("y", String(vh / 2 - h / 2));
-      track.current.setAttribute("width", String(w));
-      track.current.setAttribute("height", String(h));
-    };
-
-    const prog = { p: 0 };
-    const updateShape = () => {
-      const p = prog.p;
-      const k = keyframes();
-      let s: Record<string, Pt>;
-      if (p <= 1) s = lerp(k.zero, k.bar, p);
-      else if (p <= 2) s = lerp(k.bar, k.tri, p - 1);
-      else s = lerp(k.tri, k.huge, p - 2);
-      writePoly(s);
-      positionTrack();
-
-      if (counter.current) {
-        const fillPct = Math.min(p, 1);
-        counter.current.textContent = String(Math.floor(fillPct * 100)).padStart(3, "0");
-      }
-    };
-    updateShape();
-
-    const tl = gsap.timeline();
-
-    // ── Stage 1: visible loading bar (track + white fill) — prog 0 → 1 ──
-    tl.to(prog, { p: 1, duration: 2.0, ease: "power1.inOut", onUpdate: updateShape });
-
-    // ── Stage 2: track fades, bar morphs into triangle (still white on black) ──
-    tl.to(track.current, { opacity: 0, duration: 0.3, ease: "power2.in" });
-    tl.to(
-      prog,
-      { p: 2, duration: 1.0, ease: "power3.inOut", onUpdate: updateShape },
-      "<"
-    );
-    tl.to(counter.current, { opacity: 0, y: 16, duration: 0.5, ease: "power2.in" }, "<");
-
-    // ── Stage 3: black-bg + white-fill fade as the cutout layer is revealed,
-    //            and the triangle grows huge so the page shows through it ──
-    tl.to(
-      [blackBg.current, whiteUse.current],
-      { opacity: 0, duration: 0.5, ease: "power2.in" },
-      "+=0.15"
-    );
-    tl.to(
-      prog,
-      { p: 3, duration: 1.3, ease: "power3.in", onUpdate: updateShape },
-      "<+0.05"
-    );
-    tl.to(overlay.current, { opacity: 0, duration: 0.35, ease: "power2.out" }, "-=0.15");
-
-    tl.call(() => {
+    // Timeouts rather than a GSAP timeline: the intro must still dismiss when
+    // the tab is backgrounded and animation frames are throttled.
+    const fade = window.setTimeout(() => {
+      if (overlay.current) overlay.current.style.opacity = "0";
+    }, 3050);
+    const done = window.setTimeout(() => {
       document.body.style.overflow = "";
       onDone();
-    });
-
-    const onResize = () => updateShape();
-    window.addEventListener("resize", onResize);
+    }, 3500);
 
     return () => {
-      tl.kill();
-      window.removeEventListener("resize", onResize);
+      window.clearTimeout(fade);
+      window.clearTimeout(done);
       document.body.style.overflow = "";
     };
   }, [onDone]);
@@ -5164,58 +5038,14 @@ function LoadingScreen({ onDone }: { onDone: () => void }) {
         position: "fixed",
         inset: 0,
         zIndex: 99999,
-        overflow: "hidden",
-        background: "transparent",
-        fontFamily:
-          "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        background: "#0B0B09",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: "opacity 0.45s ease",
       }}
     >
-      <svg
-        width="100%"
-        height="100%"
-        style={{ position: "absolute", inset: 0, display: "block" }}
-      >
-        <defs>
-          {/* The single morphing polygon lives here, invisible until used */}
-          <polygon ref={poly} id="loader-shape" />
-          <mask id="loader-mask">
-            <rect width="100%" height="100%" fill="white" />
-            {/* Same polygon used as a black "hole" in the mask */}
-            <use href="#loader-shape" fill="black" />
-          </mask>
-        </defs>
-
-        {/* Layer 1 (bottom): black with polygon-shaped hole — page shows through hole */}
-        <rect width="100%" height="100%" fill="#000" mask="url(#loader-mask)" />
-
-        {/* Layer 2: opaque black covering Layer 1 during phases 1–2; fades phase 3 */}
-        <rect ref={blackBg} width="100%" height="100%" fill="#000" />
-
-        {/* Layer 3: track (visible phase 1, fades during phase 2 morph) */}
-        <rect ref={track} fill="rgba(255,255,255,0.16)" />
-
-        {/* Layer 4 (top): same polygon rendered white — the visible "fill" /
-            triangle through phases 1–2; fades out during phase 3 so the cutout
-            beneath becomes the only visible representation of the shape */}
-        <use ref={whiteUse} href="#loader-shape" fill="#fff" />
-      </svg>
-
-      <div
-        ref={counter}
-        style={{
-          position: "absolute",
-          bottom: "clamp(18px, 4vw, 32px)",
-          left: "clamp(18px, 4vw, 32px)",
-          color: "#fff",
-          fontSize: "clamp(44px, 12vw, 72px)",
-          fontWeight: 300,
-          letterSpacing: "-2px",
-          lineHeight: 1,
-          willChange: "transform, opacity",
-        }}
-      >
-        000
-      </div>
+      <NoviinLoader size={240} color="#ECECEA" />
     </div>
   );
 }

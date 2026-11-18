@@ -8,6 +8,7 @@
 // status chips, and a circle-check progress indicator.
 
 import React from "react";
+import { NoviinLoader } from "./NoviinLoader";
 import {
   Check,
   X,
@@ -789,9 +790,7 @@ export function PageLoader({ messages }: { messages: string[] }) {
         gap: 20,
       }}
     >
-      <div style={{ animation: "nexuspulse 1.5s ease-in-out infinite" }}>
-        <NoviinMark size={46} />
-      </div>
+      <NoviinLoader size={118} color={C.ink} />
       <div
         style={{
           display: "flex",
@@ -808,7 +807,7 @@ export function PageLoader({ messages }: { messages: string[] }) {
         </span>
       </div>
       <style>
-        {"@keyframes nexuspulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(0.92);opacity:0.7}}@keyframes nexusfade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}"}
+        {"@keyframes nexusfade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}"}
       </style>
     </div>
   );
