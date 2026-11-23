@@ -1,5 +1,5 @@
 // ── CHART KIT ─────────────────────────────────────────────────────────────────
-// Hand-built SVG charts in the Nexus visual language — no chart library, so
+// Hand-built SVG charts in the Noviin visual language — no chart library, so
 // every chart inherits the ivory/ink/sage palette exactly. All charts are
 // responsive (SVG viewBox + width:100%) and get their numbers from the seeded
 // demo dataset.

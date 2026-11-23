@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Noviin">
+  <rect width="512" height="512" rx="112" fill="#0B0B09" />
+  <defs>
+    <clipPath id="disc">
+      <circle cx="469" cy="480" r="259" />
+    </clipPath>
+  </defs>
+  <g transform="translate(-149.05 -158.55) scale(0.8636)">
+    <g clip-path="url(#disc)" fill="#F7F6F1" stroke="#F7F6F1" stroke-width="6" stroke-linejoin="round">
+      <rect x="340" y="190" width="245" height="70" rx="14" />
+      <rect x="200" y="295" width="275" height="26" rx="12" />
+      <rect x="553" y="295" width="150" height="22" rx="11" />
+      <path d="M200 351H388Q394 351 394 357V367Q394 373 400 373H585Q591 373 591 367V357Q591 351 597 351H740V391H200Z" />
+      <path d="M200 424H343Q349 424 349 430V437Q349 443 355 443H655Q661 443 661 437V430Q661 424 667 424H740V460H200Z" />
+      <path d="M200 508H360Q368 508 372 514L378 520H678Q684 520 684 514V502Q684 496 690 496H740V532H200Z" />
+      <path d="M200 566H288Q294 566 294 572V576Q294 582 300 582H404Q410 582 410 588V593Q410 599 416 599H590Q596 599 596 593V572Q596 566 602 566H740V607H200Z" />
+      <rect x="561" y="630" width="150" height="22" rx="11" />
+      <path d="M200 648H368Q374 648 374 654V662Q374 668 380 668H508A6 6 0 0 1 508 680H200Z" />
+      <rect x="355" y="713" width="235" height="80" rx="14" />
+    </g>
+  </g>
+</svg>
